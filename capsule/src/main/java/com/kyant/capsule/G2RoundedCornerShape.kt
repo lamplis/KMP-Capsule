@@ -12,12 +12,10 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.fastCoerceIn
 import kotlin.math.min
 
@@ -73,106 +71,15 @@ open class G2RoundedCornerShape(
             )
         }
 
-        with(cornerSmoothness) {
-            val topRightDy = (topRight * extendedFraction).fastCoerceAtMost(centerY - topRight)
-            val topRightDx = (topRight * extendedFraction).fastCoerceAtMost(centerX - topRight)
-            val topLeftDx = (topLeft * extendedFraction).fastCoerceAtMost(centerX - topLeft)
-            val topLeftDy = (topLeft * extendedFraction).fastCoerceAtMost(centerY - topLeft)
-            val bottomLeftDy = (bottomLeft * extendedFraction).fastCoerceAtMost(centerY - bottomLeft)
-            val bottomLeftDx = (bottomLeft * extendedFraction).fastCoerceAtMost(centerX - bottomLeft)
-            val bottomRightDx = (bottomRight * extendedFraction).fastCoerceAtMost(centerX - bottomRight)
-            val bottomRightDy = (bottomRight * extendedFraction).fastCoerceAtMost(centerY - bottomRight)
-
-            return Outline.Generic(
-                Path().apply {
-                    when {
-                        // capsule
-                        topRight == maxR && topLeft == maxR && bottomLeft == maxR && bottomRight == maxR -> {
-                            if (width > height) {
-                                // right circle
-                                rightCircle(size, maxR)
-                                // top right corner
-                                topRightCorner1(size, topRight, topRightDx)
-                                // top line
-                                lineTo(topLeft + topLeftDx, 0f)
-                                // top left corner
-                                topLeftCorner1(size, topLeft, topLeftDx)
-                                // left circle
-                                leftCircle(size, maxR)
-                                // bottom left corner
-                                bottomLeftCorner1(size, bottomLeft, -bottomLeftDx)
-                                // bottom line
-                                lineTo(width - bottomRight - bottomRightDx, height)
-                                // bottom right corner
-                                bottomRightCorner1(size, bottomRight, -bottomRightDx)
-                            } else {
-                                // right line
-                                moveTo(width, height - bottomRight - bottomRightDy)
-                                lineTo(width, topRight + topRightDy)
-                                // top right corner
-                                topRightCorner0(size, topRight, -topRightDy)
-                                // top circle
-                                topCircle(size, maxR)
-                                // top left corner
-                                topLeftCorner0(size, topLeft, topLeftDy)
-                                // left line
-                                lineTo(0f, height - bottomLeft - bottomLeftDy)
-                                // bottom left corner
-                                bottomLeftCorner0(size, bottomLeft, bottomLeftDy)
-                                // bottom circle
-                                bottomCircle(size, maxR)
-                                // bottom right corner
-                                bottomRightCorner0(size, bottomRight, -bottomRightDy)
-                            }
-                        }
-
-                        // rounded rectangle
-                        else -> {
-                            // right line
-                            moveTo(width, height - bottomRight - bottomRightDy)
-                            lineTo(width, topRight + topRightDy)
-
-                            // top right corner
-                            if (topRight > 0f) {
-                                topRightCorner0(size, topRight, -topRightDy)
-                                topRightCircle(size, topRight)
-                                topRightCorner1(size, topRight, topRightDx)
-                            }
-
-                            // top line
-                            lineTo(topLeft + topLeftDx, 0f)
-
-                            // top left corner
-                            if (topLeft > 0f) {
-                                topLeftCorner1(size, topLeft, topLeftDx)
-                                topLeftCircle(size, topLeft)
-                                topLeftCorner0(size, topLeft, topLeftDy)
-                            }
-
-                            // left line
-                            lineTo(0f, height - bottomLeft - bottomLeftDy)
-
-                            // bottom left corner
-                            if (bottomLeft > 0f) {
-                                bottomLeftCorner0(size, bottomLeft, bottomLeftDy)
-                                bottomLeftCircle(size, bottomLeft)
-                                bottomLeftCorner1(size, bottomLeft, -bottomLeftDx)
-                            }
-
-                            // bottom line
-                            lineTo(width - bottomRight - bottomRightDx, height)
-
-                            // bottom right corner
-                            if (bottomRight > 0f) {
-                                bottomRightCorner1(size, bottomRight, -bottomRightDx)
-                                bottomRightCircle(size, bottomRight)
-                                bottomRightCorner0(size, bottomRight, -bottomRightDy)
-                            }
-                        }
-                    }
-                }
+        return Outline.Generic(
+            cornerSmoothness.createRoundedRectanglePath(
+                size = size,
+                topRight = topRight,
+                topLeft = topLeft,
+                bottomLeft = bottomLeft,
+                bottomRight = bottomRight
             )
-        }
+        )
     }
 
     override fun copy(
@@ -229,8 +136,8 @@ open class G2RoundedCornerShape(
     }
 
     override fun toString(): String {
-        return "G2RoundedCornerShape(topStart=$topStart, topEnd=$topEnd, bottomEnd=$bottomEnd, bottomStart=$bottomStart, " +
-                "cornerSmoothing=$cornerSmoothness)"
+        return "G2RoundedCornerShape(topStart=$topStart, topEnd=$topEnd, bottomEnd=$bottomEnd, " +
+                "bottomStart=$bottomStart, cornerSmoothing=$cornerSmoothness)"
     }
 }
 
@@ -341,5 +248,5 @@ fun G2RoundedCornerShape(
         topEnd = CornerSize(topEndPercent),
         bottomEnd = CornerSize(bottomEndPercent),
         bottomStart = CornerSize(bottomStartPercent),
-        cornerSmoothness = cornerSmoothness,
+        cornerSmoothness = cornerSmoothness
     )

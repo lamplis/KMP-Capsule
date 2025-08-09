@@ -6,10 +6,13 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.util.fastCoerceAtMost
 import kotlin.math.PI
 import kotlin.math.asin
 import kotlin.math.cos
+import kotlin.math.min
 import kotlin.math.sin
 
 @Immutable
@@ -27,7 +30,7 @@ data class CornerSmoothness(
     private val d = 1.5f * sin / (1f + cos) / (1f + cos)
     private val ad = a + d // minimum 17/18 at arcsin(0.6)
 
-    internal fun Path.topRightCorner0(size: Size, r: Float, dy: Float) {
+    private fun Path.topRightCorner0(size: Size, r: Float, dy: Float) {
         val w = size.width
         cubicTo(
             w,
@@ -39,7 +42,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.topRightCircle(size: Size, r: Float) {
+    private fun Path.topRightCircle(size: Size, r: Float) {
         if (circleRadians > 0f) {
             arcToRad(
                 rect = Rect(
@@ -53,7 +56,7 @@ data class CornerSmoothness(
         }
     }
 
-    internal fun Path.topRightCorner1(size: Size, r: Float, dx: Float) {
+    private fun Path.topRightCorner1(size: Size, r: Float, dx: Float) {
         val w = size.width
         cubicTo(
             w - r * a,
@@ -65,7 +68,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.topLeftCorner1(size: Size, r: Float, dx: Float) {
+    private fun Path.topLeftCorner1(size: Size, r: Float, dx: Float) {
         cubicTo(
             r * ad,
             0f,
@@ -76,7 +79,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.topLeftCircle(size: Size, r: Float) {
+    private fun Path.topLeftCircle(size: Size, r: Float) {
         if (circleRadians > 0f) {
             arcToRad(
                 rect = Rect(
@@ -90,7 +93,7 @@ data class CornerSmoothness(
         }
     }
 
-    internal fun Path.topLeftCorner0(size: Size, r: Float, dy: Float) {
+    private fun Path.topLeftCorner0(size: Size, r: Float, dy: Float) {
         cubicTo(
             0f,
             r * a,
@@ -101,7 +104,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.bottomLeftCorner0(size: Size, r: Float, dy: Float) {
+    private fun Path.bottomLeftCorner0(size: Size, r: Float, dy: Float) {
         val h = size.height
         cubicTo(
             0f,
@@ -113,7 +116,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.bottomLeftCircle(size: Size, r: Float) {
+    private fun Path.bottomLeftCircle(size: Size, r: Float) {
         if (circleRadians > 0f) {
             arcToRad(
                 rect = Rect(
@@ -127,7 +130,7 @@ data class CornerSmoothness(
         }
     }
 
-    internal fun Path.bottomLeftCorner1(size: Size, r: Float, dx: Float) {
+    private fun Path.bottomLeftCorner1(size: Size, r: Float, dx: Float) {
         val h = size.height
         cubicTo(
             r * a,
@@ -139,7 +142,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.bottomRightCorner1(size: Size, r: Float, dx: Float) {
+    private fun Path.bottomRightCorner1(size: Size, r: Float, dx: Float) {
         val w = size.width
         val h = size.height
         cubicTo(
@@ -152,7 +155,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.bottomRightCircle(size: Size, r: Float) {
+    private fun Path.bottomRightCircle(size: Size, r: Float) {
         if (circleRadians > 0f) {
             arcToRad(
                 rect = Rect(
@@ -166,7 +169,7 @@ data class CornerSmoothness(
         }
     }
 
-    internal fun Path.bottomRightCorner0(size: Size, r: Float, dy: Float) {
+    private fun Path.bottomRightCorner0(size: Size, r: Float, dy: Float) {
         val w = size.width
         val h = size.height
         cubicTo(
@@ -179,7 +182,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.rightCircle(size: Size, r: Float) {
+    private fun Path.rightCircle(size: Size, r: Float) {
         arcToRad(
             rect = Rect(
                 center = Offset(size.width - r, r),
@@ -191,7 +194,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.leftCircle(size: Size, r: Float) {
+    private fun Path.leftCircle(size: Size, r: Float) {
         arcToRad(
             rect = Rect(
                 center = Offset(r, r),
@@ -203,7 +206,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.topCircle(size: Size, r: Float) {
+    private fun Path.topCircle(size: Size, r: Float) {
         arcToRad(
             rect = Rect(
                 center = Offset(r, r),
@@ -215,7 +218,7 @@ data class CornerSmoothness(
         )
     }
 
-    internal fun Path.bottomCircle(size: Size, r: Float) {
+    private fun Path.bottomCircle(size: Size, r: Float) {
         arcToRad(
             rect = Rect(
                 center = Offset(r, size.height - r),
@@ -225,6 +228,115 @@ data class CornerSmoothness(
             sweepAngleRadians = -(bezierRadians + circleRadians) * 2f,
             forceMoveTo = false
         )
+    }
+
+    internal fun createRoundedRectanglePath(
+        size: Size,
+        topRight: Float,
+        topLeft: Float,
+        bottomLeft: Float,
+        bottomRight: Float
+    ): Path {
+        val (width, height) = size
+        val (centerX, centerY) = size.center
+        val maxR = min(centerX, centerY)
+
+        val topRightDy = (topRight * extendedFraction).fastCoerceAtMost(centerY - topRight)
+        val topRightDx = (topRight * extendedFraction).fastCoerceAtMost(centerX - topRight)
+        val topLeftDx = (topLeft * extendedFraction).fastCoerceAtMost(centerX - topLeft)
+        val topLeftDy = (topLeft * extendedFraction).fastCoerceAtMost(centerY - topLeft)
+        val bottomLeftDy = (bottomLeft * extendedFraction).fastCoerceAtMost(centerY - bottomLeft)
+        val bottomLeftDx = (bottomLeft * extendedFraction).fastCoerceAtMost(centerX - bottomLeft)
+        val bottomRightDx = (bottomRight * extendedFraction).fastCoerceAtMost(centerX - bottomRight)
+        val bottomRightDy = (bottomRight * extendedFraction).fastCoerceAtMost(centerY - bottomRight)
+
+        return Path().apply {
+            when {
+                // capsule
+                topRight == maxR && topLeft == maxR && bottomLeft == maxR && bottomRight == maxR -> {
+                    if (width > height) {
+                        // right circle
+                        rightCircle(size, maxR)
+                        // top right corner
+                        topRightCorner1(size, topRight, topRightDx)
+                        // top line
+                        lineTo(topLeft + topLeftDx, 0f)
+                        // top left corner
+                        topLeftCorner1(size, topLeft, topLeftDx)
+                        // left circle
+                        leftCircle(size, maxR)
+                        // bottom left corner
+                        bottomLeftCorner1(size, bottomLeft, -bottomLeftDx)
+                        // bottom line
+                        lineTo(width - bottomRight - bottomRightDx, height)
+                        // bottom right corner
+                        bottomRightCorner1(size, bottomRight, -bottomRightDx)
+                    } else {
+                        // right line
+                        moveTo(width, height - bottomRight - bottomRightDy)
+                        lineTo(width, topRight + topRightDy)
+                        // top right corner
+                        topRightCorner0(size, topRight, -topRightDy)
+                        // top circle
+                        topCircle(size, maxR)
+                        // top left corner
+                        topLeftCorner0(size, topLeft, topLeftDy)
+                        // left line
+                        lineTo(0f, height - bottomLeft - bottomLeftDy)
+                        // bottom left corner
+                        bottomLeftCorner0(size, bottomLeft, bottomLeftDy)
+                        // bottom circle
+                        bottomCircle(size, maxR)
+                        // bottom right corner
+                        bottomRightCorner0(size, bottomRight, -bottomRightDy)
+                    }
+                }
+
+                // rounded rectangle
+                else -> {
+                    // right line
+                    moveTo(width, height - bottomRight - bottomRightDy)
+                    lineTo(width, topRight + topRightDy)
+
+                    // top right corner
+                    if (topRight > 0f) {
+                        topRightCorner0(size, topRight, -topRightDy)
+                        topRightCircle(size, topRight)
+                        topRightCorner1(size, topRight, topRightDx)
+                    }
+
+                    // top line
+                    lineTo(topLeft + topLeftDx, 0f)
+
+                    // top left corner
+                    if (topLeft > 0f) {
+                        topLeftCorner1(size, topLeft, topLeftDx)
+                        topLeftCircle(size, topLeft)
+                        topLeftCorner0(size, topLeft, topLeftDy)
+                    }
+
+                    // left line
+                    lineTo(0f, height - bottomLeft - bottomLeftDy)
+
+                    // bottom left corner
+                    if (bottomLeft > 0f) {
+                        bottomLeftCorner0(size, bottomLeft, bottomLeftDy)
+                        bottomLeftCircle(size, bottomLeft)
+                        bottomLeftCorner1(size, bottomLeft, -bottomLeftDx)
+                    }
+
+                    // bottom line
+                    lineTo(width - bottomRight - bottomRightDx, height)
+
+                    // bottom right corner
+                    if (bottomRight > 0f) {
+                        bottomRightCorner1(size, bottomRight, -bottomRightDx)
+                        bottomRightCircle(size, bottomRight)
+                        bottomRightCorner0(size, bottomRight, -bottomRightDy)
+                    }
+                }
+            }
+        }
     }
 
     companion object {
