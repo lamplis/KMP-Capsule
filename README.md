@@ -64,7 +64,7 @@ Drawing cubic Bézier curves on Android performs poorly. However, the Capsule li
 calculate the control points, achieving optimal theoretical performance.
 
 When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
-Use animatedShape.copy(cornerSmoothness = CornerSmoothness.None) to temporarily disable corner smoothing during the
+Use `animatedShape.copy(cornerSmoothness = CornerSmoothness.None)` to temporarily disable corner smoothing during the
 animation.
 
 ## How it works
