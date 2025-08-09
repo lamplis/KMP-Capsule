@@ -2,9 +2,9 @@
 
 Capsule is a Jetpack Compose library that creates **G2 continuous** rounded corner shapes.
 
-![Comparison G2 corner and G1 corner](docs/comparison.png)
+![Comparison of G2 continuous corner and G1 continuous corner](docs/comparison.png)
 
-The black one is the G2 continuous corner, the red one is the normal G1 continuous corner.
+The black one is the G2 continuous corner. The red one is the normal G1 continuous corner.
 
 ## [Playground app](./app/release/app-release.apk)
 
@@ -60,23 +60,24 @@ CapsuleShape(cornerSmoothness = cornerSmoothness)
 
 ## Performance
 
-The performance of drawing cubic Bézier curves on Android is bad, while the Capsule library uses a very efficient way to
-calculate the control points of the cubic Bézier curves, so it does the best theoretically.
+Drawing cubic Bézier curves on Android performs poorly. However, the Capsule library uses a very efficient method to
+calculate the control points, achieving optimal theoretical performance.
 
-When the corner radius is constantly changing, the performance is bad, please use
-`animatedShape.copy(cornerSmoothness = CornerSmoothness.None)` to disable corner smoothing in the progress.
+When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
+Use animatedShape.copy(cornerSmoothness = CornerSmoothness.None) to temporarily disable corner smoothing during the
+animation.
 
 ## How it works
 
 Each corner consists of a part of **circle (C)** and two **cubic Bézier curves (B)** that connect the circle to the
 straight edges (L) of the rectangle.
 
+The proportion of the circular section is defined by the `circleFraction` (f_c) and the extended length relative to the
+corner radius (R) is defined by the `extendedFraction` (f_e) in `CornerSmoothness` class.
+
 ![Schematic](docs/schematic.png)
 
-The amount of circle portion is defined by the `circleFraction` (**f_c**) and the amount of "extended length (R × f_e)"
-relative to the corner radius (**R**) is defined by the `extendedFraction` (**f_e**) in `CornerSmoothness` class.
-
-It uses math to calculate the control points of the cubic Bézier curves to meet G2 continuity.
+It uses mathematical calculations to determine the control points of the cubic Bézier curves to achieve G2 continuity.
 
 ## Comparison with other implementations
 
