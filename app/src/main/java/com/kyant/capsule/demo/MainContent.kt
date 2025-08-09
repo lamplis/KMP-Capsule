@@ -41,7 +41,6 @@ import androidx.compose.ui.util.fastRoundToInt
 import com.kyant.capsule.CapsuleShape
 import com.kyant.capsule.CornerSmoothness
 import com.kyant.capsule.G2RoundedCornerShape
-import com.kyant.capsule.Slider
 
 @Composable
 fun MainContent() {

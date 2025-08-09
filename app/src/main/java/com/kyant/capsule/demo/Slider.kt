@@ -1,4 +1,4 @@
-package com.kyant.capsule
+package com.kyant.capsule.demo
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -18,6 +18,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
+import com.kyant.capsule.CapsuleShape
 
 @Composable
 fun Slider(
