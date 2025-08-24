@@ -44,19 +44,19 @@ G2RectangleShape
 Custom corner smoothness:
 
 ```kotlin
-// default corner smoothness, which looks similar to the Apple's
-val defaultCornerSmoothness = CornerSmoothness.Default
-
-// custom corner smoothness
+// Apple like corner smoothness
 val cornerSmoothness = CornerSmoothness(
-    circleFraction = 0.181f,
-    extendedFraction = 0.75f
+    circleFraction = 0.25f,
+    extendedFraction = 1f
 )
 
 // create shapes with a custom corner smoothness
 G2RoundedCornerShape(16.dp, cornerSmoothness = cornerSmoothness)
 CapsuleShape(cornerSmoothness = cornerSmoothness)
 ```
+
+Note that when the `circleFraction` is higher than 0, it may produce weird but ignorable visual effect (small bumps) by
+the limits of G2 continuity.
 
 ## Performance
 
