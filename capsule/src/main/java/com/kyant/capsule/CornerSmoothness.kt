@@ -10,7 +10,6 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastCoerceAtMost
 import kotlin.math.PI
-import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -26,9 +25,9 @@ data class CornerSmoothness(
 
     private val sin = sin(bezierRadians)
     private val cos = cos(bezierRadians)
-    private val a = 1f - sin / (1f + cos) // 2/3 at arcsin(0.6)
+    private val a = 1f - sin / (1f + cos)
     private val d = 1.5f * sin / (1f + cos) / (1f + cos)
-    private val ad = a + d // minimum 17/18 at arcsin(0.6)
+    private val ad = a + d
 
     private fun Path.topRightCorner0(size: Size, r: Float, dy: Float) {
         val w = size.width
@@ -344,9 +343,8 @@ data class CornerSmoothness(
         @Stable
         val Default: CornerSmoothness =
             CornerSmoothness(
-                // ~= 16.26 deg, bezierRadians = arcsin(0.6)
-                circleFraction = 1f - 2f * asin(0.6f) / HalfPI,
-                extendedFraction = 0.75f
+                circleFraction = 0f,
+                extendedFraction = 1f / 3f
             )
 
         @Stable
