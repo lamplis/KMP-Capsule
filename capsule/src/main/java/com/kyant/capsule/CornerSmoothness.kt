@@ -10,6 +10,7 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.util.fastCoerceAtMost
 import kotlin.math.PI
+import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
@@ -343,8 +344,9 @@ data class CornerSmoothness(
         @Stable
         val Default: CornerSmoothness =
             CornerSmoothness(
-                circleFraction = 0f,
-                extendedFraction = 0.5f
+                // ~= 16.26 deg, bezierRadians = arcsin(0.6)
+                circleFraction = 1f - 2f * asin(0.6f) / HalfPI,
+                extendedFraction = 1f
             )
 
         @Stable
