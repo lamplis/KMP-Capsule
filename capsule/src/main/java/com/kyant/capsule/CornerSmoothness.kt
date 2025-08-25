@@ -343,8 +343,8 @@ data class CornerSmoothness(
         @Stable
         val Default: CornerSmoothness =
             CornerSmoothness(
-                circleFraction = 0f,
-                extendedFraction = 0.5f
+                circleFraction = 0.2f,
+                extendedFraction = 1f
             )
 
         @Stable
