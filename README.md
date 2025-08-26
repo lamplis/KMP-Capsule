@@ -1,10 +1,16 @@
 # Capsule
 
-Capsule is a Jetpack Compose library that creates **G2 continuous** rounded corner shapes.
+Capsule is a Jetpack Compose library that creates **G3 / G2 continuous** rounded rectangles.
 
-![Comparison of G2 continuous corner and G1 continuous corner](docs/comparison.png)
+![All corner types supported by Capsule](docs/all_continuities.jpg)
 
-The black one is the G2 continuous corner. The red one is the normal G1 continuous corner.
+Curvature of G3 continuous rounded corner in Capsule (in purple):
+
+<img alt="G3 curvature" height="400" src="docs/curvature_g3.jpg"/>
+
+Curvature of G2 continuous rounded corner in Capsule:
+
+<img alt="G2 curvature" height="400" src="docs/curvature_g2.jpg"/>
 
 ## [Playground app](./app/release/app-release.apk)
 
@@ -28,35 +34,27 @@ implementation("com.github.Kyant0:Capsule:<version>")
 
 ## Usages
 
-Replace the `RoundedCornerShape` with `G2RoundedCornerShape` or `CapsuleShape`:
+Replace the `RoundedCornerShape` with `ContinuousRoundedRectangle` or `ContinuousCapsule`:
 
 ```kotlin
 // create a basic rounded corner shape
-G2RoundedCornerShape(16.dp)
+ContinuousRoundedRectangle(16.dp)
 
 // create a capsule shape
-CapsuleShape
-
-// create a rectangle shape
-G2RectangleShape
+ContinuousCapsule
 ```
 
-Custom corner smoothness:
+Custom continuity:
 
 ```kotlin
-// Apple like corner smoothness
-val cornerSmoothness = CornerSmoothness(
-    circleFraction = 0.25f,
-    extendedFraction = 1f
-)
+val g1 = G1Continuity
+val g2 = G2Continuity(circleFraction = 0.25f, extendedFraction = 1f)
+val g3 = G3Continuity(extendedFraction = 1f)
 
-// create shapes with a custom corner smoothness
-G2RoundedCornerShape(16.dp, cornerSmoothness = cornerSmoothness)
-CapsuleShape(cornerSmoothness = cornerSmoothness)
+// create shapes with custom continuity
+ContinuousRoundedRectangle(16.dp, continuity = g3)
+ContinuousCapsule(continuity = g3)
 ```
-
-Note that when the `circleFraction` is higher than 0, it may produce weird but ignorable visual effect (small bumps) by
-the limits of G2 continuity.
 
 ## Performance
 
@@ -64,7 +62,7 @@ Drawing cubic Bézier curves on Android performs poorly. However, the Capsule li
 calculate the control points, achieving optimal theoretical performance.
 
 When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
-Use `animatedShape.copy(cornerSmoothness = CornerSmoothness.None)` to temporarily disable corner smoothing during the
+Use `animatedShape.copy(continuity = G1Continuity)` to temporarily disable corner smoothing during the
 animation.
 
 ## How it works
@@ -78,16 +76,3 @@ corner radius (R) is defined by the `extendedFraction` (f_e) in `CornerSmoothnes
 ![Schematic](docs/schematic.png)
 
 It uses mathematical calculations to determine the control points of the cubic Bézier curves to achieve G2 continuity.
-
-## Comparison with other implementations
-
-| Property        | Capsule                                                | androidx                                                 | Compose       | Apple                                              |
-|-----------------|--------------------------------------------------------|----------------------------------------------------------|---------------|----------------------------------------------------|
-| Continuity      | G2                                                     | G1 (~G2)                                                 | G1            | ~G3                                                |
-| Curvature       | Non-monotonic                                          | Monotonic                                                | Discontinuous | ~Monotonic                                         |
-| Curvature graph | ![Capsule curvature graph](docs/capsule_curvature.jpg) | ![androidx curvature graph](docs/androidx_curvature.jpg) | -             | ![Apple curvature graph](docs/apple_curvature.jpg) |
-| Graph note      | green: **B**, blue: **C**                              | red: **B**, blue: **C**                                  | -             | last green: **C**                                  |
-
-androidx refers to the `RoundedPolygon.Companion.rectangle` in `androidx.graphics.shapes` package.
-
-The implementation in Figma is similar to the androidx one.

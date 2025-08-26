@@ -18,7 +18,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
-import com.kyant.capsule.CapsuleShape
+import com.kyant.capsule.ContinuousCapsule
 
 @Composable
 fun Slider(
@@ -35,8 +35,8 @@ fun Slider(
 
     Column(
         modifier
-            .border(1.dp, Color(0xFF2196F3), CapsuleShape)
-            .clip(CapsuleShape)
+            .border(1.dp, Color(0xFF2196F3), ContinuousCapsule)
+            .clip(ContinuousCapsule)
             .drawBehind {
                 val value = (state.value - valueRange.start) / range
                 drawRect(

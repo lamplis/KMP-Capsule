@@ -13,11 +13,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -38,9 +40,11 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastRoundToInt
-import com.kyant.capsule.CapsuleShape
-import com.kyant.capsule.CornerSmoothness
-import com.kyant.capsule.G2RoundedCornerShape
+import com.kyant.capsule.ContinuousCapsule
+import com.kyant.capsule.ContinuousRoundedRectangle
+import com.kyant.capsule.G1Continuity
+import com.kyant.capsule.G2Continuity
+import com.kyant.capsule.G3Continuity
 
 @Composable
 fun MainContent() {
@@ -57,19 +61,39 @@ fun MainContent() {
 
         var showBaseline by remember { mutableStateOf(false) }
 
-        val radiusDp = remember { mutableFloatStateOf(64f) }
-        val circleFraction = remember { mutableFloatStateOf(CornerSmoothness.Default.circleFraction) }
-        val extendedFraction = remember { mutableFloatStateOf(CornerSmoothness.Default.extendedFraction) }
+        val radiusDp = remember { mutableFloatStateOf(40f) }
+        val circleFraction = remember { mutableFloatStateOf(0.25f) }
+        val extendedFraction = remember { mutableFloatStateOf(1f) }
 
-        val aspectRatio = remember { mutableFloatStateOf(2f) }
+        val aspectRatio = remember { mutableFloatStateOf(1.618f) }
 
         var scale by remember { mutableFloatStateOf(1f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
 
-        BasicText("Drag to move, pinch to zoom")
+        var currentContinuity by remember { mutableIntStateOf(3) }
 
         Box(
             Modifier
+                .clip(ContinuousCapsule)
+                .background(Color(0xFF90CAF9))
+                .clickable {
+                    currentContinuity =
+                        when (currentContinuity) {
+                            1 -> 2
+                            2 -> 3
+                            else -> 1
+                        }
+                }
+                .height(40.dp)
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            BasicText("Current continuity: G$currentContinuity")
+        }
+
+        Box(
+            Modifier
+                .wrapContentHeight(Alignment.Top)
                 .weight(1f)
                 .align(Alignment.CenterHorizontally),
             contentAlignment = Alignment.Center
@@ -103,15 +127,24 @@ fun MainContent() {
                             )
                         }
 
+                        val continuity = when (currentContinuity) {
+                            2 -> G2Continuity(
+                                circleFraction = circleFraction.floatValue,
+                                extendedFraction = extendedFraction.floatValue
+                            )
+
+                            3 -> G3Continuity(
+                                extendedFraction = extendedFraction.floatValue
+                            )
+
+                            else -> G1Continuity
+                        }
                         drawOutline(
-                            G2RoundedCornerShape(
+                            ContinuousRoundedRectangle(
                                 radiusDp.floatValue.dp,
-                                CornerSmoothness(
-                                    circleFraction = circleFraction.floatValue,
-                                    extendedFraction = extendedFraction.floatValue
-                                )
+                                continuity = continuity
                             ).createOutline(size, layoutDirection, this),
-                            color = Color.Black
+                            color = Color(0xFF2196F3)
                         )
                     }
                     .layout { measurable, constraints ->
@@ -136,18 +169,22 @@ fun MainContent() {
                 "Corner radius",
                 { "${"%.0f".format(it)}dp" },
             )
-            Slider(
-                circleFraction,
-                0f..1f,
-                "Circle fraction",
-                { "%.1f".format(it * 100f) + "%" },
-            )
-            Slider(
-                extendedFraction,
-                0f..2f,
-                "Extended fraction",
-                { "%.1f".format(it * 100f) + "%" },
-            )
+            if (currentContinuity == 2) {
+                Slider(
+                    circleFraction,
+                    0f..1f,
+                    "Circle fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+            }
+            if (currentContinuity == 2 || currentContinuity == 3) {
+                Slider(
+                    extendedFraction,
+                    0f..2f,
+                    "Extended fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+            }
             Slider(
                 aspectRatio,
                 1f..2f,
@@ -162,7 +199,7 @@ fun MainContent() {
         ) {
             Box(
                 Modifier
-                    .clip(CapsuleShape)
+                    .clip(ContinuousCapsule)
                     .background(Color(0xFF90CAF9))
                     .clickable { showBaseline = !showBaseline }
                     .height(40.dp)
@@ -177,7 +214,7 @@ fun MainContent() {
 
             Box(
                 Modifier
-                    .clip(CapsuleShape)
+                    .clip(ContinuousCapsule)
                     .background(Color(0xFF90CAF9))
                     .clickable {
                         scale = 1f
@@ -192,13 +229,13 @@ fun MainContent() {
 
             Box(
                 Modifier
-                    .clip(CapsuleShape)
+                    .clip(ContinuousCapsule)
                     .background(Color(0xFF90CAF9))
                     .clickable {
-                        radiusDp.floatValue = 64f
-                        circleFraction.floatValue = CornerSmoothness.Default.circleFraction
-                        extendedFraction.floatValue = CornerSmoothness.Default.extendedFraction
-                        aspectRatio.floatValue = 2f
+                        radiusDp.floatValue = 40f
+                        circleFraction.floatValue = 0.25f
+                        extendedFraction.floatValue = 1f
+                        aspectRatio.floatValue = 1.618f
                         scale = 1f
                         offset = Offset.Zero
                     }

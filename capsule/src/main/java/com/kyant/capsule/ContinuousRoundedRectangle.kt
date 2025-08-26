@@ -20,19 +20,18 @@ import androidx.compose.ui.util.fastCoerceIn
 import kotlin.math.min
 
 @Immutable
-open class G2RoundedCornerShape(
+open class ContinuousRoundedRectangle(
     topStart: CornerSize,
     topEnd: CornerSize,
     bottomEnd: CornerSize,
     bottomStart: CornerSize,
-    val cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-) :
-    CornerBasedShape(
-        topStart = topStart,
-        topEnd = topEnd,
-        bottomEnd = bottomEnd,
-        bottomStart = bottomStart
-    ) {
+    val continuity: Continuity = Continuity.Default
+) : CornerBasedShape(
+    topStart = topStart,
+    topEnd = topEnd,
+    bottomEnd = bottomEnd,
+    bottomStart = bottomStart
+) {
 
     override fun createOutline(
         size: Size,
@@ -42,6 +41,7 @@ open class G2RoundedCornerShape(
         bottomStart: Float,
         layoutDirection: LayoutDirection
     ): Outline {
+        // rectangle
         if (topStart + topEnd + bottomEnd + bottomStart == 0f) {
             return Outline.Rectangle(size.toRect())
         }
@@ -55,10 +55,9 @@ open class G2RoundedCornerShape(
         val bottomRight = (if (layoutDirection == Ltr) bottomEnd else bottomStart).fastCoerceIn(0f, maxR)
         val bottomLeft = (if (layoutDirection == Ltr) bottomStart else bottomEnd).fastCoerceIn(0f, maxR)
 
-        if (cornerSmoothness.circleFraction >= 1f ||
-            (width == height &&
-                    topLeft == centerX &&
-                    topLeft == topRight && bottomLeft == bottomRight)
+        if (
+            !continuity.hasSmoothness ||
+            (width == height && topLeft == centerX && topLeft == topRight && bottomLeft == bottomRight) // circle
         ) {
             return Outline.Rounded(
                 RoundRect(
@@ -71,14 +70,12 @@ open class G2RoundedCornerShape(
             )
         }
 
-        return Outline.Generic(
-            cornerSmoothness.createRoundedRectanglePath(
-                size = size,
-                topRight = topRight,
-                topLeft = topLeft,
-                bottomLeft = bottomLeft,
-                bottomRight = bottomRight
-            )
+        return continuity.createRoundedRectangleOutline(
+            size = size,
+            topLeft = topLeft,
+            topRight = topRight,
+            bottomRight = bottomRight,
+            bottomLeft = bottomLeft
         )
     }
 
@@ -87,13 +84,13 @@ open class G2RoundedCornerShape(
         topEnd: CornerSize,
         bottomEnd: CornerSize,
         bottomStart: CornerSize
-    ): G2RoundedCornerShape {
-        return G2RoundedCornerShape(
+    ): ContinuousRoundedRectangle {
+        return ContinuousRoundedRectangle(
             topStart = topStart,
             topEnd = topEnd,
             bottomEnd = bottomEnd,
             bottomStart = bottomStart,
-            cornerSmoothness = cornerSmoothness
+            continuity = continuity
         )
     }
 
@@ -102,26 +99,26 @@ open class G2RoundedCornerShape(
         topEnd: CornerSize = this.topEnd,
         bottomEnd: CornerSize = this.bottomEnd,
         bottomStart: CornerSize = this.bottomStart,
-        cornerSmoothness: CornerSmoothness = this.cornerSmoothness
-    ): G2RoundedCornerShape {
-        return G2RoundedCornerShape(
+        continuity: Continuity = this.continuity
+    ): ContinuousRoundedRectangle {
+        return ContinuousRoundedRectangle(
             topStart = topStart,
             topEnd = topEnd,
             bottomEnd = bottomEnd,
             bottomStart = bottomStart,
-            cornerSmoothness = cornerSmoothness
+            continuity = continuity
         )
     }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is G2RoundedCornerShape) return false
+        if (other !is ContinuousRoundedRectangle) return false
 
         if (topStart != other.topStart) return false
         if (topEnd != other.topEnd) return false
         if (bottomEnd != other.bottomEnd) return false
         if (bottomStart != other.bottomStart) return false
-        if (cornerSmoothness != other.cornerSmoothness) return false
+        if (continuity != other.continuity) return false
 
         return true
     }
@@ -131,122 +128,122 @@ open class G2RoundedCornerShape(
         result = 31 * result + topEnd.hashCode()
         result = 31 * result + bottomEnd.hashCode()
         result = 31 * result + bottomStart.hashCode()
-        result = 31 * result + cornerSmoothness.hashCode()
+        result = 31 * result + continuity.hashCode()
         return result
     }
 
     override fun toString(): String {
-        return "G2RoundedCornerShape(topStart=$topStart, topEnd=$topEnd, bottomEnd=$bottomEnd, " +
-                "bottomStart=$bottomStart, cornerSmoothing=$cornerSmoothness)"
+        return "ContinuousRoundedRectangle(topStart=$topStart, topEnd=$topEnd, bottomEnd=$bottomEnd, " +
+                "bottomStart=$bottomStart, cornerSmoothing=$continuity)"
     }
 }
 
 @Stable
-val G2RectangleShape: G2RoundedCornerShape = G2RoundedCornerShape(0f)
+val ContinuousRectangle: ContinuousRoundedRectangle = ContinuousRoundedRectangle(0f)
 
 @Stable
-val CapsuleShape: G2RoundedCornerShape = CapsuleShape()
+val ContinuousCapsule: ContinuousRoundedRectangle = ContinuousCapsule()
 
 @Suppress("FunctionName")
 @Stable
-fun CapsuleShape(
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+fun ContinuousCapsule(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         topStartPercent = 50,
         topEndPercent = 50,
         bottomEndPercent = 50,
         bottomStartPercent = 50,
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     corner: CornerSize,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         topStart = corner,
         topEnd = corner,
         bottomEnd = corner,
         bottomStart = corner,
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     size: Dp,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         corner = CornerSize(size),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     @FloatRange(from = 0.0) size: Float,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         corner = CornerSize(size),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     @IntRange(from = 0, to = 100) percent: Int,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         corner = CornerSize(percent),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     topStart: Dp = 0.dp,
     topEnd: Dp = 0.dp,
     bottomEnd: Dp = 0.dp,
     bottomStart: Dp = 0.dp,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         topStart = CornerSize(topStart),
         topEnd = CornerSize(topEnd),
         bottomEnd = CornerSize(bottomEnd),
         bottomStart = CornerSize(bottomStart),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     @FloatRange(from = 0.0) topStart: Float = 0f,
     @FloatRange(from = 0.0) topEnd: Float = 0f,
     @FloatRange(from = 0.0) bottomEnd: Float = 0f,
     @FloatRange(from = 0.0) bottomStart: Float = 0f,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         topStart = CornerSize(topStart),
         topEnd = CornerSize(topEnd),
         bottomEnd = CornerSize(bottomEnd),
         bottomStart = CornerSize(bottomStart),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
 
 @Stable
-fun G2RoundedCornerShape(
+fun ContinuousRoundedRectangle(
     @IntRange(from = 0, to = 100) topStartPercent: Int = 0,
     @IntRange(from = 0, to = 100) topEndPercent: Int = 0,
     @IntRange(from = 0, to = 100) bottomEndPercent: Int = 0,
     @IntRange(from = 0, to = 100) bottomStartPercent: Int = 0,
-    cornerSmoothness: CornerSmoothness = CornerSmoothness.Default
-): G2RoundedCornerShape =
-    G2RoundedCornerShape(
+    continuity: Continuity = Continuity.Default
+): ContinuousRoundedRectangle =
+    ContinuousRoundedRectangle(
         topStart = CornerSize(topStartPercent),
         topEnd = CornerSize(topEndPercent),
         bottomEnd = CornerSize(bottomEndPercent),
         bottomStart = CornerSize(bottomStartPercent),
-        cornerSmoothness = cornerSmoothness
+        continuity = continuity
     )
