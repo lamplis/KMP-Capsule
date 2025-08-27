@@ -27,9 +27,9 @@ private data class LerpContinuousRoundedRectangle(
     topEnd = LerpCornerSize(start.topEnd, stop.topEnd, fraction),
     bottomEnd = LerpCornerSize(start.bottomEnd, stop.bottomEnd, fraction),
     bottomStart = LerpCornerSize(start.bottomStart, stop.bottomStart, fraction),
-    continuity = when {
-        fraction <= 0f -> start.continuity
-        fraction == 1f -> stop.continuity
+    continuity = when (fraction) {
+        0f -> start.continuity
+        1f -> stop.continuity
         else -> start.continuity.lerp(stop.continuity, fraction)
     }
 )
