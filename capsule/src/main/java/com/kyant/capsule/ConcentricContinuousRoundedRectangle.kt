@@ -6,31 +6,38 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.util.fastCoerceAtLeast
 
 @Stable
-fun ContinuousRoundedRectangle.concentric(innerPadding: Dp): ContinuousRoundedRectangle {
-    return ConcentricContinuousRoundedRectangle(this, innerPadding)
+fun ContinuousRoundedRectangle.concentricInset(padding: Dp): ContinuousRoundedRectangle {
+    return ConcentricContinuousRoundedRectangle(this, padding)
+}
+
+@Stable
+fun ContinuousRoundedRectangle.concentricOutset(padding: Dp): ContinuousRoundedRectangle {
+    return ConcentricContinuousRoundedRectangle(this, -padding)
 }
 
 @Immutable
 private data class ConcentricContinuousRoundedRectangle(
-    val outerShape: ContinuousRoundedRectangle,
-    val innerPadding: Dp
+    val containerShape: ContinuousRoundedRectangle,
+    val padding: Dp
 ) : ContinuousRoundedRectangle(
-    topStart = ConcentricCornerSize(outerShape.topStart, innerPadding),
-    topEnd = ConcentricCornerSize(outerShape.topEnd, innerPadding),
-    bottomEnd = ConcentricCornerSize(outerShape.bottomEnd, innerPadding),
-    bottomStart = ConcentricCornerSize(outerShape.bottomStart, innerPadding),
-    continuity = outerShape.continuity
+    topStart = ConcentricCornerSize(containerShape.topStart, padding),
+    topEnd = ConcentricCornerSize(containerShape.topEnd, padding),
+    bottomEnd = ConcentricCornerSize(containerShape.bottomEnd, padding),
+    bottomStart = ConcentricCornerSize(containerShape.bottomStart, padding),
+    continuity = containerShape.continuity
 )
 
 @Immutable
 private data class ConcentricCornerSize(
-    private val outerCornerSize: CornerSize,
-    private val innerPadding: Dp
+    private val containerCornerSize: CornerSize,
+    private val padding: Dp
 ) : CornerSize {
 
     override fun toPx(shapeSize: Size, density: Density): Float {
-        return outerCornerSize.toPx(shapeSize, density) - with(density) { innerPadding.toPx() }
+        return (containerCornerSize.toPx(shapeSize, density) - with(density) { padding.toPx() })
+            .fastCoerceAtLeast(0f)
     }
 }
