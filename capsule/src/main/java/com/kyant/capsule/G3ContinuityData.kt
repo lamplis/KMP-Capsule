@@ -1,5 +1,6 @@
 package com.kyant.capsule
 
+import androidx.compose.ui.util.fastCoerceAtLeast
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
@@ -20,12 +21,15 @@ internal class G3ContinuityData(val extendedFraction: Float) {
     // to make it like G3 continuous.
     private val firstBezier = rawBezier.splitFirst(0.6)
     private val midPoint = firstBezier.p3
-    private val midTangentialAngleMultiplier = 1.01
+    private val midTangentialAngleMultiplier =
+        1.04 -
+                0.125 * (extendedFraction - 1.0).fastCoerceAtLeast(0.0) -
+                0.045 * (0.5 - extendedFraction).fastCoerceAtLeast(0.0)
     private val midTangentialAngle =
         firstBezier.derivativeAtEnd().let { atan2(it.y, it.x) } * midTangentialAngleMultiplier
-    private val d = UnitOffset(1.0, 1.0) * (-0.015 * extendedFraction)
+    private val d = UnitOffset(0.0, -0.009) * extendedFraction.toDouble()
     private val midCurvature = 1.02
-    private val endCurvature = 1.06
+    private val endCurvature = 1.08
 
     private val beziers = listOf(
         CubicBezier.generateG2ContinuousBezier(

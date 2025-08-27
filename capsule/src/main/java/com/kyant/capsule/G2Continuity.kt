@@ -13,8 +13,8 @@ import androidx.compose.ui.util.lerp
 
 @Immutable
 data class G2Continuity(
-    @param:FloatRange(from = 0.0, to = 1.0) val circleFraction: Float = 0.25f,
-    @param:FloatRange(from = 0.0) val extendedFraction: Float = 1f
+    @param:FloatRange(from = 0.0, to = 1.0) val circleFraction: Float = 0f,
+    @param:FloatRange(from = 0.0) val extendedFraction: Float = 0.5f
 ) : Continuity {
 
     override val hasSmoothness: Boolean = circleFraction < 1f && extendedFraction > 0f
