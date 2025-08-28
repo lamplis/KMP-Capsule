@@ -18,6 +18,28 @@ interface Continuity {
         bottomLeft: Float
     ): Outline
 
+    fun createHorizontalCapsuleOutline(size: Size): Outline {
+        val cornerRadius = size.height * 0.5f
+        return createRoundedRectangleOutline(
+            size,
+            cornerRadius,
+            cornerRadius,
+            cornerRadius,
+            cornerRadius
+        )
+    }
+
+    fun createVerticalCapsuleOutline(size: Size): Outline {
+        val cornerRadius = size.width * 0.5f
+        return createRoundedRectangleOutline(
+            size,
+            cornerRadius,
+            cornerRadius,
+            cornerRadius,
+            cornerRadius
+        )
+    }
+
     fun lerp(stop: Continuity, fraction: Float): Continuity
 
     companion object {

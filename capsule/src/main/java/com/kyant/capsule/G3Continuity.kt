@@ -2,6 +2,8 @@ package com.kyant.capsule
 
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
@@ -184,6 +186,198 @@ data class G3Continuity(
                         y + (bezier.p0.x * bottomLeft).toFloat().fastCoerceAtLeast(bottomLeftDy)
                     )
                 }
+            }
+
+            // left line
+            close()
+        }
+        return Outline.Generic(path)
+    }
+
+    override fun createHorizontalCapsuleOutline(size: Size): Outline {
+        val (width, height) = size
+        val centerX = width * 0.5f
+        val centerY = height * 0.5f
+
+        val radius = height * 0.5f
+        val cornerFx = ((centerX - radius) / radius).fastCoerceAtMost(extendedFraction)
+        val cornerDx = -radius * cornerFx
+
+        val beziers = data.getBeziers(cornerFx)
+        val beziersReversed = beziers.reversed()
+
+        // draw clockwise
+        val path = Path().apply {
+            // left circle (5/4 π -> 3/4 π)
+            arcTo(
+                rect = Rect(Offset(radius, centerY), radius),
+                startAngleDegrees = 135f,
+                sweepAngleDegrees = 90f,
+                forceMoveTo = true
+            )
+
+            // top left corner (3/4 π -> 1/2 π)
+            var x = radius
+            var y = 0f
+            beziersReversed.forEach { bezier ->
+                cubicTo(
+                    x - (bezier.p2.x * radius).toFloat(),
+                    y + (bezier.p2.y * radius).toFloat(),
+                    x - (bezier.p1.x * radius).toFloat(),
+                    y + (bezier.p1.y * radius).toFloat(),
+                    x - (bezier.p0.x * radius).toFloat().fastCoerceAtLeast(cornerDx),
+                    y + (bezier.p0.y * radius).toFloat()
+                )
+            }
+
+            // top line
+            x = width - radius
+            y = 0f
+            lineTo(x + cornerDx, y)
+
+            // top right corner (1/2 π -> 1/4 π)
+            beziers.forEach { bezier ->
+                cubicTo(
+                    x + (bezier.p1.x * radius).toFloat(),
+                    y + (bezier.p1.y * radius).toFloat(),
+                    x + (bezier.p2.x * radius).toFloat(),
+                    y + (bezier.p2.y * radius).toFloat(),
+                    x + (bezier.p3.x * radius).toFloat(),
+                    y + (bezier.p3.y * radius).toFloat()
+                )
+            }
+
+            // right circle (1/4 π -> -1/4 π)
+            arcTo(
+                rect = Rect(Offset(width - radius, centerY), radius),
+                startAngleDegrees = -45f,
+                sweepAngleDegrees = 90f,
+                forceMoveTo = false
+            )
+
+            // bottom right corner (7/4 π -> 3/2 π)
+            x = width - radius
+            y = height
+            beziersReversed.forEach { bezier ->
+                cubicTo(
+                    x + (bezier.p2.x * radius).toFloat(),
+                    y - (bezier.p2.y * radius).toFloat(),
+                    x + (bezier.p1.x * radius).toFloat(),
+                    y - (bezier.p1.y * radius).toFloat(),
+                    x + (bezier.p0.x * radius).toFloat().fastCoerceAtLeast(cornerDx),
+                    y - (bezier.p0.y * radius).toFloat()
+                )
+            }
+
+            // bottom line
+            x = radius
+            y = height
+            lineTo(x - cornerDx, y)
+
+            // bottom left corner (3/2 π -> 5/4 π)
+            beziers.forEach { bezier ->
+                cubicTo(
+                    x - (bezier.p1.x * radius).toFloat(),
+                    y - (bezier.p1.y * radius).toFloat(),
+                    x - (bezier.p2.x * radius).toFloat(),
+                    y - (bezier.p2.y * radius).toFloat(),
+                    x - (bezier.p3.x * radius).toFloat(),
+                    y - (bezier.p3.y * radius).toFloat()
+                )
+            }
+        }
+        return Outline.Generic(path)
+    }
+
+    override fun createVerticalCapsuleOutline(size: Size): Outline {
+        val (width, height) = size
+        val centerX = width * 0.5f
+        val centerY = height * 0.5f
+
+        val radius = width * 0.5f
+        val cornerFy = ((centerY - radius) / radius).fastCoerceAtMost(extendedFraction)
+        val cornerDy = -radius * cornerFy
+
+        val beziers = data.getBeziers(cornerFy)
+        val beziersReversed = beziers.reversed()
+
+        // draw clockwise
+        val path = Path().apply {
+            var x = 0f
+            var y = radius
+            moveTo(x, y - cornerDy)
+
+            // top left corner (π -> 3/4 π)
+            beziers.forEach { bezier ->
+                cubicTo(
+                    x + (bezier.p1.y * radius).toFloat(),
+                    y - (bezier.p1.x * radius).toFloat(),
+                    x + (bezier.p2.y * radius).toFloat(),
+                    y - (bezier.p2.x * radius).toFloat(),
+                    x + (bezier.p3.y * radius).toFloat(),
+                    y - (bezier.p3.x * radius).toFloat()
+                )
+            }
+
+            // top circle (3/4 π -> 1/4 π)
+            arcTo(
+                rect = Rect(Offset(centerX, radius), radius),
+                startAngleDegrees = -135f,
+                sweepAngleDegrees = 90f,
+                forceMoveTo = false
+            )
+
+            // top right corner (1/4 π -> 0)
+            x = width
+            y = radius
+            beziersReversed.forEach { bezier ->
+                cubicTo(
+                    x - (bezier.p2.y * radius).toFloat(),
+                    y - (bezier.p2.x * radius).toFloat(),
+                    x - (bezier.p1.y * radius).toFloat(),
+                    y - (bezier.p1.x * radius).toFloat(),
+                    x - (bezier.p0.y * radius).toFloat(),
+                    y - (bezier.p0.x * radius).toFloat().fastCoerceAtLeast(cornerDy)
+                )
+            }
+
+            // right line
+            x = width
+            y = height - radius
+            lineTo(x, y + cornerDy)
+
+            // bottom right corner (2 π -> 7/4 π)
+            beziers.forEach { bezier ->
+                cubicTo(
+                    x - (bezier.p1.y * radius).toFloat(),
+                    y + (bezier.p1.x * radius).toFloat(),
+                    x - (bezier.p2.y * radius).toFloat(),
+                    y + (bezier.p2.x * radius).toFloat(),
+                    x - (bezier.p3.y * radius).toFloat(),
+                    y + (bezier.p3.x * radius).toFloat()
+                )
+            }
+
+            // bottom circle (7/4 π -> 5/4 π)
+            arcTo(
+                rect = Rect(Offset(centerX, height - radius), radius),
+                startAngleDegrees = 45f,
+                sweepAngleDegrees = 90f,
+                forceMoveTo = false
+            )
+
+            // bottom left corner (5/4 π -> π)
+            x = 0f
+            y = height - radius
+            beziersReversed.forEach { bezier ->
+                cubicTo(
+                    x + (bezier.p2.y * radius).toFloat(),
+                    y + (bezier.p2.x * radius).toFloat(),
+                    x + (bezier.p1.y * radius).toFloat(),
+                    y + (bezier.p1.x * radius).toFloat(),
+                    x + (bezier.p0.y * radius).toFloat(),
+                    y + (bezier.p0.x * radius).toFloat().fastCoerceAtLeast(cornerDy)
+                )
             }
 
             // left line
