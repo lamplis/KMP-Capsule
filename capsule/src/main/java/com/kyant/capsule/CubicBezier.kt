@@ -7,18 +7,18 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 internal data class CubicBezier(
-    val p0: UnitOffset,
-    val p1: UnitOffset,
-    val p2: UnitOffset,
-    val p3: UnitOffset
+    val p0: UnitPoint,
+    val p1: UnitPoint,
+    val p2: UnitPoint,
+    val p3: UnitPoint
 ) {
 
-    fun derivativeAt(t: Double): UnitOffset {
+    fun derivativeAt(t: Double): UnitPoint {
         val u = 1.0 - t
         return (p1 - p0) * (3.0 * u * u) + (p2 - p1) * (6.0 * u * t) + (p3 - p2) * (3.0 * t * t)
     }
 
-    fun derivativeAtEnd(): UnitOffset {
+    fun derivativeAtEnd(): UnitPoint {
         return (p3 - p2) * 3.0
     }
 
@@ -52,8 +52,8 @@ internal data class CubicBezier(
 
         @Suppress("LocalVariableName")
         fun generateG2ContinuousBezier(
-            start: UnitOffset,
-            end: UnitOffset,
+            start: UnitPoint,
+            end: UnitPoint,
             startTangentialAngle: Double,
             endTangentialAngle: Double,
             startCurvature: Double,
@@ -110,11 +110,11 @@ internal data class CubicBezier(
             }
 
             val p0 = start
-            val p1 = start + UnitOffset(
+            val p1 = start + UnitPoint(
                 (lambda0 * cos(startTangentialAngle)).fastCoerceAtLeast(0.0),
                 (lambda0 * sin(startTangentialAngle)).fastCoerceAtLeast(0.0)
             )
-            val p2 = end - UnitOffset(
+            val p2 = end - UnitPoint(
                 (lambda3 * cos(endTangentialAngle)).fastCoerceAtLeast(0.0),
                 (lambda3 * sin(endTangentialAngle)).fastCoerceAtLeast(0.0)
             )

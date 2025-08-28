@@ -17,17 +17,17 @@ internal class G2ContinuityData(
 
     private val bezier =
         CubicBezier(
-            UnitOffset(-extendedFraction.toDouble(), 0.0),
-            UnitOffset((1.0 - 1.5 / (1.0 + cos)) * halfTan, 0.0),
-            UnitOffset(halfTan, 0.0),
-            UnitOffset(sin, 1.0 - cos)
+            UnitPoint(-extendedFraction.toDouble(), 0.0),
+            UnitPoint((1.0 - 1.5 / (1.0 + cos)) * halfTan, 0.0),
+            UnitPoint(halfTan, 0.0),
+            UnitPoint(sin, 1.0 - cos)
         )
 
     private var _capsuleBezier: CubicBezier? = null
 
     private val capsuleBezier
         get() = _capsuleBezier
-            ?: bezier.copy(p0 = UnitOffset.Zero).also {
+            ?: bezier.copy(p0 = UnitPoint.Zero).also {
                 _capsuleBezier = it
             }
 
