@@ -6,20 +6,20 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
@@ -39,12 +40,12 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceAtLeast
+import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.ContinuousRoundedRectangle
-import com.kyant.capsule.G1Continuity
 import com.kyant.capsule.G2Continuity
-import com.kyant.capsule.G3Continuity
+import com.kyant.capsule.toPath
 
 @Composable
 fun MainContent() {
@@ -60,41 +61,29 @@ fun MainContent() {
         }
 
         var showBaseline by remember { mutableStateOf(false) }
+        var showCurvatureComb by remember { mutableStateOf(true) }
 
         val radiusDp = remember { mutableFloatStateOf(40f) }
-        val circleFraction = remember { mutableFloatStateOf(0.25f) }
-        val extendedFraction = remember { mutableFloatStateOf(1f) }
+        val circleFraction = remember { mutableFloatStateOf(0.18f) }
+        val extendedFraction = remember { mutableFloatStateOf(0.5f) }
+        val bezierCurvatureScale = remember { mutableFloatStateOf(1.15f) }
+        val circleCurvatureScale = remember { mutableFloatStateOf(1.15f) }
 
         val aspectRatio = remember { mutableFloatStateOf(1.618f) }
 
         var scale by remember { mutableFloatStateOf(1f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
 
-        var currentContinuity by remember { mutableIntStateOf(3) }
-
         Box(
             Modifier
-                .clip(ContinuousCapsule)
-                .background(Color(0xFF90CAF9))
-                .clickable {
-                    currentContinuity =
-                        when (currentContinuity) {
-                            1 -> 2
-                            2 -> 3
-                            else -> 1
-                        }
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    val width = placeable.width
+                    val height = width
+                    layout(width, height) {
+                        placeable.place(0, 0)
+                    }
                 }
-                .height(40.dp)
-                .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            BasicText("Current continuity: G$currentContinuity")
-        }
-
-        Box(
-            Modifier
-                .wrapContentHeight(Alignment.Top)
-                .weight(1f)
                 .align(Alignment.CenterHorizontally),
             contentAlignment = Alignment.Center
         ) {
@@ -107,7 +96,7 @@ fun MainContent() {
                             offset += pan
                         }
                     }
-                    .background(Color.LightGray)
+                    .background(Color.Black.copy(alpha = 0.05f))
                     .clipToBounds()
                     .aspectRatio(1f)
                     .graphicsLayer {
@@ -119,6 +108,37 @@ fun MainContent() {
                         scaleY = scale
                     }
                     .drawBehind {
+                        val radiusPx =
+                            radiusDp.floatValue.dp.toPx().toDouble()
+                                .fastCoerceIn(0.0, size.minDimension.toDouble() * 0.5)
+                        val continuity = G2Continuity(
+                            circleFraction = circleFraction.floatValue.toDouble(),
+                            extendedFraction = extendedFraction.floatValue.toDouble(),
+                            bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
+                            circleCurvatureScale = circleCurvatureScale.floatValue.toDouble()
+                        )
+                        val shape = ContinuousRoundedRectangle(
+                            radiusPx.toFloat(),
+                            continuity = continuity
+                        )
+                        val pathSegments = continuity.createRoundedRectanglePathSegments(
+                            width = size.width.toDouble(),
+                            height = size.height.toDouble(),
+                            topLeft = shape.topStart.toPx(size, this).toDouble(),
+                            topRight = radiusPx,
+                            bottomRight = radiusPx,
+                            bottomLeft = radiusPx
+                        )
+
+                        if (showCurvatureComb) {
+                            val curvatureComb = pathSegments.toCurvatureComb(size.minDimension * 0.15f)
+                            drawPath(
+                                curvatureComb,
+                                Color.Red,
+                                style = Stroke(1.dp.toPx())
+                            )
+                        }
+
                         if (showBaseline) {
                             drawOutline(
                                 RoundedCornerShape(radiusDp.floatValue.dp)
@@ -127,24 +147,9 @@ fun MainContent() {
                             )
                         }
 
-                        val continuity = when (currentContinuity) {
-                            2 -> G2Continuity(
-                                circleFraction = circleFraction.floatValue,
-                                extendedFraction = extendedFraction.floatValue
-                            )
-
-                            3 -> G3Continuity(
-                                extendedFraction = extendedFraction.floatValue
-                            )
-
-                            else -> G1Continuity
-                        }
-                        drawOutline(
-                            ContinuousRoundedRectangle(
-                                radiusDp.floatValue.dp,
-                                continuity = continuity
-                            ).createOutline(size, layoutDirection, this),
-                            color = Color(0xFF2196F3)
+                        drawPath(
+                            pathSegments.toPath(),
+                            Color(0xFF2196F3)
                         )
                     }
                     .layout { measurable, constraints ->
@@ -161,89 +166,124 @@ fun MainContent() {
         }
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(end = 64.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Slider(
-                radiusDp,
-                0f..maxRadius.value,
-                "Corner radius",
-                { "${"%.0f".format(it)}dp" },
-            )
-            if (currentContinuity == 2) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable { showBaseline = !showBaseline }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText(
+                        if (showBaseline) "Hide baseline"
+                        else "Show baseline"
+                    )
+                }
+
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable { showCurvatureComb = !showCurvatureComb }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText(
+                        if (showCurvatureComb) "Hide curvature comb"
+                        else "Show curvature comb"
+                    )
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Slider(
+                    aspectRatio,
+                    1f..2f,
+                    "Aspect ratio",
+                    { "%.3f".format(it) },
+                )
+                Slider(
+                    radiusDp,
+                    0f..maxRadius.value,
+                    "Corner radius",
+                    { "${"%.0f".format(it)}dp" },
+                )
                 Slider(
                     circleFraction,
                     0f..1f,
                     "Circle fraction",
                     { "%.1f".format(it * 100f) + "%" },
                 )
-            }
-            if (currentContinuity == 2 || currentContinuity == 3) {
                 Slider(
                     extendedFraction,
                     0f..2f,
                     "Extended fraction",
                     { "%.1f".format(it * 100f) + "%" },
                 )
-            }
-            Slider(
-                aspectRatio,
-                1f..2f,
-                "Aspect ratio",
-                { "%.3f".format(it) },
-            )
-        }
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                Modifier
-                    .clip(ContinuousCapsule)
-                    .background(Color(0xFF90CAF9))
-                    .clickable { showBaseline = !showBaseline }
-                    .height(40.dp)
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicText(
-                    if (showBaseline) "Hide baseline"
-                    else "Show baseline"
+                Slider(
+                    bezierCurvatureScale,
+                    0.1f..3f,
+                    "Bezier curvature scale",
+                    { "%.2f".format(it) },
+                )
+                Slider(
+                    circleCurvatureScale,
+                    0.1f..3f,
+                    "Circle curvature scale",
+                    { "%.2f".format(it) },
                 )
             }
 
-            Box(
-                Modifier
-                    .clip(ContinuousCapsule)
-                    .background(Color(0xFF90CAF9))
-                    .clickable {
-                        scale = 1f
-                        offset = Offset.Zero
-                    }
-                    .height(40.dp)
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.Center
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                BasicText("Reset scale & pos")
-            }
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable {
+                            scale = 1f
+                            offset = Offset.Zero
+                            aspectRatio.floatValue = 1.618f
+                        }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText("Reset scale & pos")
+                }
 
-            Box(
-                Modifier
-                    .clip(ContinuousCapsule)
-                    .background(Color(0xFF90CAF9))
-                    .clickable {
-                        radiusDp.floatValue = 40f
-                        circleFraction.floatValue = 0.25f
-                        extendedFraction.floatValue = 1f
-                        aspectRatio.floatValue = 1.618f
-                        scale = 1f
-                        offset = Offset.Zero
-                    }
-                    .height(40.dp)
-                    .padding(horizontal = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                BasicText("Reset")
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable {
+                            radiusDp.floatValue = 40f
+                            circleFraction.floatValue = 0.18f
+                            extendedFraction.floatValue = 0.5f
+                            bezierCurvatureScale.floatValue = 1.15f
+                            circleCurvatureScale.floatValue = 1.15f
+                        }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText("Reset parameters")
+                }
             }
         }
     }

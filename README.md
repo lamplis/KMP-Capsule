@@ -1,20 +1,16 @@
 # Capsule
 
-Capsule is a Jetpack Compose library that creates **G3 / G2 continuous** rounded rectangles.
+Capsule is a Jetpack Compose library that creates **G2 continuous** rounded rectangles.
 
-![All corner types supported by Capsule](docs/all_continuities.jpg)
+![Different types of rounded rectangles](docs/rounded_rectangles.png)
 
-Curvature of G3 continuous rounded corner in Capsule (in purple):
+Customizable curvature combs:
 
-<img alt="G3 curvature" height="400" src="docs/curvature_g3.jpg"/>
-
-Curvature of G2 continuous rounded corner in Capsule:
-
-<img alt="G2 curvature" height="400" src="docs/curvature_g2.jpg"/>
+![Different curvature combs](docs/curvature_combs.png)
 
 ## [Playground app](./app/release/app-release.apk)
 
-<img alt="Screenshot of the playground app" height="400" src="docs/playground_app.png"/>
+<img alt="Screenshot of the playground app" height="400" src="docs/playground_app.jpg"/>
 
 ## Installation
 
@@ -48,12 +44,11 @@ Custom continuity:
 
 ```kotlin
 val g1 = G1Continuity
-val g2 = G2Continuity(circleFraction = 0.25f, extendedFraction = 1f)
-val g3 = G3Continuity(extendedFraction = 1f)
+val g2 = G2Continuity(circleFraction = 0.25f, extendedFraction = 1f, /*...*/)
 
 // create shapes with custom continuity
-ContinuousRoundedRectangle(16.dp, continuity = g3)
-ContinuousCapsule(continuity = g3)
+ContinuousRoundedRectangle(16.dp, continuity = g2)
+ContinuousCapsule(continuity = g2)
 ```
 
 ## Performance
@@ -64,15 +59,3 @@ calculate the control points, achieving optimal theoretical performance.
 When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
 Use `animatedShape.copy(continuity = G1Continuity)` to temporarily disable corner smoothing during the
 animation.
-
-## How it works
-
-Each corner consists of a part of **circle (C)** and two **cubic Bézier curves (B)** that connect the circle to the
-straight edges (L) of the rectangle.
-
-The proportion of the circular section is defined by the `circleFraction` (f_c) and the extended length relative to the
-corner radius (R) is defined by the `extendedFraction` (f_e) in `CornerSmoothness` class.
-
-![Schematic](docs/schematic.png)
-
-It uses mathematical calculations to determine the control points of the cubic Bézier curves to achieve G2 continuity.

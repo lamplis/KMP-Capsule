@@ -74,7 +74,15 @@ open class ContinuousRoundedRectangle(
         }
 
         // continuous rounded rectangle
-        return continuity.createRoundedRectangleOutline(size, topLeft, topRight, bottomRight, bottomLeft)
+        val path = continuity.createRoundedRectanglePathSegments(
+            width = size.width.toDouble(),
+            height = size.height.toDouble(),
+            topLeft = topLeft.toDouble(),
+            topRight = topRight.toDouble(),
+            bottomRight = bottomRight.toDouble(),
+            bottomLeft = bottomLeft.toDouble()
+        ).toPath()
+        return Outline.Generic(path)
     }
 
     override fun copy(

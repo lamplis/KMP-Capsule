@@ -11,6 +11,10 @@ import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
 
+@Deprecated(
+    "Use G2Continuity instead, G3Continuity is hard to maintain, and employs empirical formulas which may " +
+            "not be accurate and scientific.",
+)
 @Immutable
 data class G3Continuity(
     @param:FloatRange(from = 0.0) val extendedFraction: Float = 1f
@@ -19,6 +23,210 @@ data class G3Continuity(
     override val hasSmoothness: Boolean = extendedFraction > 0f
 
     private val data = G3ContinuityData(extendedFraction)
+
+    override fun createRoundedRectanglePathSegments(
+        width: Double,
+        height: Double,
+        topLeft: Double,
+        topRight: Double,
+        bottomRight: Double,
+        bottomLeft: Double
+    ): PathSegments {
+        val centerX = width * 0.5
+        val centerY = height * 0.5
+
+        val extendedFraction = extendedFraction.toDouble()
+
+        val topLeftFy = ((centerY - topLeft) / topLeft).fastCoerceAtMost(extendedFraction)
+        val topLeftFx = ((centerX - topLeft) / topLeft).fastCoerceAtMost(extendedFraction)
+        val topRightFx = ((centerX - topRight) / topRight).fastCoerceAtMost(extendedFraction)
+        val topRightFy = ((centerY - topRight) / topRight).fastCoerceAtMost(extendedFraction)
+        val bottomRightFy = ((centerY - bottomRight) / bottomRight).fastCoerceAtMost(extendedFraction)
+        val bottomRightFx = ((centerX - bottomRight) / bottomRight).fastCoerceAtMost(extendedFraction)
+        val bottomLeftFx = ((centerX - bottomLeft) / bottomLeft).fastCoerceAtMost(extendedFraction)
+        val bottomLeftFy = ((centerY - bottomLeft) / bottomLeft).fastCoerceAtMost(extendedFraction)
+
+        val topLeftDy = -topLeft * topLeftFy
+        val topLeftDx = -topLeft * topLeftFx
+        val topRightDx = -topRight * topRightFx
+        val topRightDy = -topRight * topRightFy
+        val bottomRightDy = -bottomRight * bottomRightFy
+        val bottomRightDx = -bottomRight * bottomRightFx
+        val bottomLeftDx = -bottomLeft * bottomLeftFx
+        val bottomLeftDy = -bottomLeft * bottomLeftFy
+
+        val segments = mutableListOf<Segment>()
+
+        // draw clockwise
+
+        var x = 0.0
+        var y = topLeft
+        var lastPoint = Point(x, y - topLeftDy)
+
+        // top left corner
+        if (topLeft > 0f) {
+            // π -> 3/4 π
+            data.getBeziers(topLeftFy.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x + bezier.p1.y * topLeft, y - bezier.p1.x * topLeft),
+                    Point(x + bezier.p2.y * topLeft, y - bezier.p2.x * topLeft),
+                    Point(x + bezier.p3.y * topLeft, y - bezier.p3.x * topLeft)
+                )
+                lastPoint = Point(x + bezier.p3.y * topLeft, y - bezier.p3.x * topLeft)
+            }
+
+            // 3/4 π -> 1/2 π
+            x = topLeft
+            y = 0.0
+            data.getBeziersReversed(topLeftFx.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x - bezier.p2.x * topLeft, y + bezier.p2.y * topLeft),
+                    Point(x - bezier.p1.x * topLeft, y + bezier.p1.y * topLeft),
+                    Point(
+                        x - (bezier.p0.x * topLeft).fastCoerceAtLeast(topLeftDx),
+                        y + bezier.p0.y * topLeft
+                    )
+                )
+                lastPoint = Point(
+                    x - (bezier.p0.x * topLeft).fastCoerceAtLeast(topLeftDx),
+                    y + bezier.p0.y * topLeft
+                )
+            }
+        }
+
+        // top line
+        x = width - topRight
+        y = 0.0
+        segments += Segment.Line(
+            lastPoint,
+            Point(x + topRightDx, y)
+        )
+        lastPoint = Point(x + topRightDx, y)
+
+        // top right corner
+        if (topRight > 0f) {
+            // 1/2 π -> 1/4 π
+            data.getBeziers(topRightFx.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x + bezier.p1.x * topRight, y + bezier.p1.y * topRight),
+                    Point(x + bezier.p2.x * topRight, y + bezier.p2.y * topRight),
+                    Point(x + bezier.p3.x * topRight, y + bezier.p3.y * topRight)
+                )
+                lastPoint = Point(x + bezier.p3.x * topRight, y + bezier.p3.y * topRight)
+            }
+
+            // 1/4 π -> 0
+            x = width
+            y = topRight
+            data.getBeziersReversed(topRightFy.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x - bezier.p2.y * topRight, y - bezier.p2.x * topRight),
+                    Point(x - bezier.p1.y * topRight, y - bezier.p1.x * topRight),
+                    Point(
+                        x - bezier.p0.y * topRight,
+                        y - (bezier.p0.x * topRight).fastCoerceAtLeast(topRightDy)
+                    )
+                )
+                lastPoint = Point(
+                    x - bezier.p0.y * topRight,
+                    y - (bezier.p0.x * topRight).fastCoerceAtLeast(topRightDy)
+                )
+            }
+        }
+
+        // right line
+        x = width
+        y = height - bottomRight
+        segments += Segment.Line(
+            lastPoint,
+            Point(x, y + bottomRightDy)
+        )
+        lastPoint = Point(x, y + bottomRightDy)
+
+        // bottom right corner
+        // 2 π -> 7/4 π
+        if (bottomRight > 0f) {
+            data.getBeziers(bottomRightFy.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x - bezier.p1.y * bottomRight, y + bezier.p1.x * bottomRight),
+                    Point(x - bezier.p2.y * bottomRight, y + bezier.p2.x * bottomRight),
+                    Point(x - bezier.p3.y * bottomRight, y + bezier.p3.x * bottomRight)
+                )
+                lastPoint = Point(x - bezier.p3.y * bottomRight, y + bezier.p3.x * bottomRight)
+            }
+
+            // 7/4 π -> 3/2 π
+            x = width - bottomRight
+            y = height
+            data.getBeziersReversed(bottomRightFx.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x + bezier.p2.x * bottomRight, y - bezier.p2.y * bottomRight),
+                    Point(x + bezier.p1.x * bottomRight, y - bezier.p1.y * bottomRight),
+                    Point(
+                        x + (bezier.p0.x * bottomRight).fastCoerceAtLeast(bottomRightDx),
+                        y - bezier.p0.y * bottomRight
+                    )
+                )
+                lastPoint = Point(
+                    x + (bezier.p0.x * bottomRight).fastCoerceAtLeast(bottomRightDx),
+                    y - bezier.p0.y * bottomRight
+                )
+            }
+        }
+
+        // bottom line
+        x = bottomLeft
+        y = height
+        segments += Segment.Line(
+            lastPoint,
+            Point(x - bottomLeftDx, y)
+        )
+        lastPoint = Point(x - bottomLeftDx, y)
+
+        // bottom left corner
+        if (bottomLeft > 0f) {
+            // 3/2 π -> 5/4 π
+            data.getBeziers(bottomLeftFx.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x - bezier.p1.x * bottomLeft, y - bezier.p1.y * bottomLeft),
+                    Point(x - bezier.p2.x * bottomLeft, y - bezier.p2.y * bottomLeft),
+                    Point(x - bezier.p3.x * bottomLeft, y - bezier.p3.y * bottomLeft)
+                )
+                lastPoint = Point(x - bezier.p3.x * bottomLeft, y - bezier.p3.y * bottomLeft)
+            }
+            x = 0.0
+            y = height - bottomLeft
+
+            // 5/4 π -> π
+            data.getBeziersReversed(bottomLeftFy.toFloat()).forEach { bezier ->
+                segments += Segment.Cubic(
+                    lastPoint,
+                    Point(x + bezier.p2.y * bottomLeft, y + bezier.p2.x * bottomLeft),
+                    Point(x + bezier.p1.y * bottomLeft, y + bezier.p1.x * bottomLeft),
+                    Point(
+                        x + bezier.p0.y * bottomLeft,
+                        y + (bezier.p0.x * bottomLeft).fastCoerceAtLeast(bottomLeftDy)
+                    )
+                )
+                lastPoint = Point(
+                    x + bezier.p0.y * bottomLeft,
+                    y + (bezier.p0.x * bottomLeft).fastCoerceAtLeast(bottomLeftDy)
+                )
+            }
+        }
+
+        // left line
+        segments += Segment.Line(lastPoint, segments.first().from)
+
+        return segments
+    }
 
     override fun createRoundedRectangleOutline(
         size: Size,
@@ -395,7 +603,7 @@ data class G3Continuity(
 
             is G2Continuity ->
                 G3Continuity(
-                    extendedFraction = lerp(extendedFraction, stop.extendedFraction, fraction)
+                    extendedFraction = lerp(extendedFraction, stop.extendedFraction.toFloat(), fraction)
                 )
 
             is G3Continuity ->

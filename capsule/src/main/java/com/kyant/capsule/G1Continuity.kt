@@ -36,8 +36,8 @@ data object G1Continuity : Continuity {
             is G1Continuity -> this
             is G2Continuity ->
                 G2Continuity(
-                    circleFraction = lerp(1f, stop.circleFraction, fraction),
-                    extendedFraction = lerp(0f, stop.extendedFraction, fraction)
+                    circleFraction = lerp(1f, stop.circleFraction.toFloat(), fraction).toDouble(),
+                    extendedFraction = lerp(0f, stop.extendedFraction.toFloat(), fraction).toDouble()
                 )
 
             is G3Continuity ->

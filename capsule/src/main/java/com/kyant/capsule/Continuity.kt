@@ -10,13 +10,33 @@ interface Continuity {
 
     val hasSmoothness: Boolean
 
+    fun createRoundedRectanglePathSegments(
+        width: Double,
+        height: Double,
+        topLeft: Double,
+        topRight: Double,
+        bottomRight: Double,
+        bottomLeft: Double
+    ): PathSegments = emptyList()
+
+    @Deprecated("Use createRoundedRectanglePathSegments instead")
     fun createRoundedRectangleOutline(
         size: Size,
         topLeft: Float,
         topRight: Float,
         bottomRight: Float,
         bottomLeft: Float
-    ): Outline
+    ): Outline {
+        val path = createRoundedRectanglePathSegments(
+            width = size.width.toDouble(),
+            height = size.height.toDouble(),
+            topLeft = topLeft.toDouble(),
+            topRight = topRight.toDouble(),
+            bottomRight = bottomRight.toDouble(),
+            bottomLeft = bottomLeft.toDouble()
+        ).toPath()
+        return Outline.Generic(path)
+    }
 
     fun createHorizontalCapsuleOutline(size: Size): Outline {
         val cornerRadius = size.height * 0.5f
@@ -45,6 +65,6 @@ interface Continuity {
     companion object {
 
         @Stable
-        val Default: Continuity = G3Continuity()
+        val Default: Continuity = G2Continuity()
     }
 }

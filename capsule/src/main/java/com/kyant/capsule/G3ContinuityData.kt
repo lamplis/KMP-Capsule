@@ -9,8 +9,8 @@ internal class G3ContinuityData(val extendedFraction: Float) {
 
     private val rawBezier =
         CubicBezier.generateG2ContinuousBezier(
-            start = UnitPoint(-extendedFraction.toDouble(), 0.0),
-            end = UnitPoint(sin(Theta), 1f - cos(Theta)),
+            start = Point(-extendedFraction.toDouble(), 0.0),
+            end = Point(sin(Theta), 1f - cos(Theta)),
             startTangentialAngle = 0.0,
             endTangentialAngle = Theta,
             startCurvature = 0.0,
@@ -27,7 +27,7 @@ internal class G3ContinuityData(val extendedFraction: Float) {
                 0.045 * (0.5 - extendedFraction).fastCoerceAtLeast(0.0)
     private val midTangentialAngle =
         firstBezier.derivativeAtEnd().let { atan2(it.y, it.x) } * midTangentialAngleMultiplier
-    private val d = UnitPoint(0.0, -0.009) * extendedFraction.toDouble()
+    private val d = Point(0.0, -0.009) * extendedFraction.toDouble()
     private val midCurvature = 1.02
     private val endCurvature = 1.08
 
@@ -58,7 +58,7 @@ internal class G3ContinuityData(val extendedFraction: Float) {
         get() = _capsuleBeziers
             ?: listOf(
                 CubicBezier.generateG2ContinuousBezier(
-                    start = UnitPoint.Zero,
+                    start = Point.Zero,
                     end = rawBezier.p3,
                     startTangentialAngle = 0.0,
                     endTangentialAngle = Theta,

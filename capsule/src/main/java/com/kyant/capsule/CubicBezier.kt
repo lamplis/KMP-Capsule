@@ -7,18 +7,18 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 internal data class CubicBezier(
-    val p0: UnitPoint,
-    val p1: UnitPoint,
-    val p2: UnitPoint,
-    val p3: UnitPoint
+    val p0: Point,
+    val p1: Point,
+    val p2: Point,
+    val p3: Point
 ) {
 
-    fun derivativeAt(t: Double): UnitPoint {
+    fun derivativeAt(t: Double): Point {
         val u = 1.0 - t
         return (p1 - p0) * (3.0 * u * u) + (p2 - p1) * (6.0 * u * t) + (p3 - p2) * (3.0 * t * t)
     }
 
-    fun derivativeAtEnd(): UnitPoint {
+    fun derivativeAtEnd(): Point {
         return (p3 - p2) * 3.0
     }
 
@@ -52,8 +52,8 @@ internal data class CubicBezier(
 
         @Suppress("LocalVariableName")
         fun generateG2ContinuousBezier(
-            start: UnitPoint,
-            end: UnitPoint,
+            start: Point,
+            end: Point,
             startTangentialAngle: Double,
             endTangentialAngle: Double,
             startCurvature: Double,
@@ -110,13 +110,86 @@ internal data class CubicBezier(
             }
 
             val p0 = start
-            val p1 = start + UnitPoint(
+            val p1 = start + Point(
                 (lambda0 * cos(startTangentialAngle)).fastCoerceAtLeast(0.0),
                 (lambda0 * sin(startTangentialAngle)).fastCoerceAtLeast(0.0)
             )
-            val p2 = end - UnitPoint(
+            val p2 = end - Point(
                 (lambda3 * cos(endTangentialAngle)).fastCoerceAtLeast(0.0),
                 (lambda3 * sin(endTangentialAngle)).fastCoerceAtLeast(0.0)
+            )
+            val p3 = end
+
+            return CubicBezier(p0, p1, p2, p3)
+        }
+
+        @Suppress("LocalVariableName")
+        fun generateG2ContinuousBezier(
+            start: Point,
+            end: Point,
+            startTangent: Point,
+            endTangent: Point,
+            startCurvature: Double,
+            endCurvature: Double
+        ): CubicBezier {
+            val A = 1.5 * startCurvature
+            val B = 1.5 * endCurvature
+            val G = startTangent.x * endTangent.y - startTangent.y * endTangent.x
+            val dx = end.x - start.x
+            val dy = end.y - start.y
+            val C = -dy * startTangent.x + dx * startTangent.y
+            val D = dy * endTangent.x - dx * endTangent.y
+
+            val lambda0: Double
+            val lambda3: Double
+
+            if (G == 0.0) {
+                lambda0 = sqrt(-C / A)
+                lambda3 = sqrt(-D / B)
+            } else {
+                when {
+                    A == 0.0 -> {
+                        lambda0 = -D / G - B * C * C / G / G / G
+                        lambda3 = -C / G
+                    }
+
+                    B == 0.0 -> {
+                        lambda0 = -D / G
+                        lambda3 = -C / G - A * D * D / G / G / G
+                    }
+
+                    else -> {
+                        val a = 2.0 * D / B
+                        val b = G * G * G / A / B / B
+                        val c = (A * D * D + C * G * G) / A / B / B
+                        val p = -a * a / 12.0 - c
+                        val q = -a * a * a / 108.0 + a * c / 3.0 - b * b / 8.0
+                        val w = cbrt(-q / 2.0 + sqrt((q * q / 4.0 + p * p * p / 27.0).fastCoerceAtLeast(0.0)))
+                        val y = a / 6 + w - p / (3.0 * w)
+                        val x1 = 0.5 * (-sqrt(y + y - a) + sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                        val x2 = 0.5 * (-sqrt(y + y - a) - sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                        val x3 = 0.5 * (sqrt(y + y - a) + sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                        val x4 = 0.5 * (sqrt(y + y - a) - sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                        lambda3 = when {
+                            x1 >= 0.0 -> x1
+                            x2 >= 0.0 -> x2
+                            x3 >= 0.0 -> x3
+                            x4 >= 0.0 -> x4
+                            else -> 0.0
+                        }
+                        lambda0 = (-D - B * lambda3 * lambda3) / G
+                    }
+                }
+            }
+
+            val p0 = start
+            val p1 = start + Point(
+                (lambda0 * startTangent.x).fastCoerceAtLeast(0.0),
+                (lambda0 * startTangent.y).fastCoerceAtLeast(0.0)
+            )
+            val p2 = end - Point(
+                (lambda3 * endTangent.x).fastCoerceAtLeast(0.0),
+                (lambda3 * endTangent.y).fastCoerceAtLeast(0.0)
             )
             val p3 = end
 
