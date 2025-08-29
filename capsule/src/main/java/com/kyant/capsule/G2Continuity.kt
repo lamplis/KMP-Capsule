@@ -12,7 +12,7 @@ data class G2Continuity(
     @param:FloatRange(from = 0.0, to = 1.0) val circleFraction: Double = 0.18,
     @param:FloatRange(from = 0.0) val extendedFraction: Double = 0.5,
     @param:FloatRange(from = 0.0, fromInclusive = false) val bezierCurvatureScale: Double = 1.15,
-    @param:FloatRange(from = 0.0, fromInclusive = false) val circleCurvatureScale: Double = bezierCurvatureScale
+    @param:FloatRange(from = 0.0, fromInclusive = false) val circleCurvatureScale: Double = 1.16
 ) : Continuity {
 
     override val hasSmoothness: Boolean = circleFraction < 1f && extendedFraction > 0f
