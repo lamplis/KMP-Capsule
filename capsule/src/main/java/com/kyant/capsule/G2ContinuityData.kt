@@ -18,6 +18,7 @@ internal class G2ContinuityData(
     private val cos = cos(bezierRadians)
     private val halfTan = sin / (1.0 + cos)
 
+    @Suppress("LocalVariableName")
     private val bezier =
         if (bezierCurvatureScale == 1.0 && circleCurvatureScale == 1.0) {
             // fast path
@@ -30,6 +31,7 @@ internal class G2ContinuityData(
         } else {
             val endTangent =
                 if (circleFraction > 0.0) {
+                    // find the unit tangent of the modified circle at the connection point
                     Segment.IntrinsicArc(
                         from = Point(sin, 1.0 - cos),
                         to = Point(
@@ -41,18 +43,33 @@ internal class G2ContinuityData(
                 } else {
                     Point(1.0 / sqrt(2.0), 1.0 / sqrt(2.0))
                 }
-            CubicBezier.generateG2ContinuousBezier(
-                start = Point(-extendedFraction, 0.0),
-                end = Point(sin, 1.0 - cos),
-                startTangent = Point(1.0, 0.0),
-                endTangent = endTangent,
-                startCurvature = 0.0,
-                endCurvature = bezierCurvatureScale
+
+            /* solved using G2 continuity conditions:
+            start = Point(-extendedFraction, 0.0)
+            end = Point(sin, 1.0 - cos)
+            startTangent = Point(1.0, 0.0)
+            endTangent = endTangent
+            startCurvature = 0.0
+            endCurvature = bezierCurvatureScale
+            */
+            val B = 1.5 * bezierCurvatureScale
+            val G = endTangent.y
+            val dx = sin - (-extendedFraction)
+            val dy = 1.0 - cos
+            val C = -dy
+            val D = dy * endTangent.x - dx * endTangent.y
+            val lambda0 = -D / G - B * C * C / G / G / G
+            CubicBezier(
+                Point(-extendedFraction, 0.0),
+                Point(-extendedFraction + lambda0, 0.0),
+                Point(sin - dy * (endTangent.x / endTangent.y), 0.0),
+                Point(sin, 1.0 - cos)
             )
         }
 
     private var _capsuleBezier: CubicBezier? = null
 
+    // used when the corner radius is full => extendedFraction == 0.0
     private val capsuleBezier
         get() = _capsuleBezier
             ?: CubicBezier(

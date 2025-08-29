@@ -39,6 +39,7 @@ data class G2Continuity(
         val hasCircle = circleFraction > 0f
         val extendedFraction = extendedFraction
 
+        // safe extended fraction for each corner
         val topLeftFy = ((centerY - topLeft) / topLeft).fastCoerceAtMost(extendedFraction)
         val topLeftFx = ((centerX - topLeft) / topLeft).fastCoerceAtMost(extendedFraction)
         val topRightFx = ((centerX - topRight) / topRight).fastCoerceAtMost(extendedFraction)
@@ -48,6 +49,7 @@ data class G2Continuity(
         val bottomLeftFx = ((centerX - bottomLeft) / bottomLeft).fastCoerceAtMost(extendedFraction)
         val bottomLeftFy = ((centerY - bottomLeft) / bottomLeft).fastCoerceAtMost(extendedFraction)
 
+        // safe extended length for each corner
         val topLeftDy = -topLeft * topLeftFy
         val topLeftDx = -topLeft * topLeftFx
         val topRightDx = -topRight * topRightFx
@@ -57,6 +59,7 @@ data class G2Continuity(
         val bottomLeftDx = -bottomLeft * bottomLeftFx
         val bottomLeftDy = -bottomLeft * bottomLeftFy
 
+        // safe circle curvature scale for each corner
         val circleCurvatureScale = if (circleCurvatureScale != 0.0) circleCurvatureScale else 1.0
         val topLeftCircleCurvatureScale =
             lerp(1.0, circleCurvatureScale, min(topLeftFx, topLeftFy) / extendedFraction)
@@ -67,6 +70,7 @@ data class G2Continuity(
         val bottomLeftCircleCurvatureScale =
             lerp(1.0, circleCurvatureScale, min(bottomLeftFx, bottomLeftFy) / extendedFraction)
 
+        // safe bezier curvature scale for each corner
         val bezierCurvatureScale = bezierCurvatureScale
         val topLeftYBezierCurvatureScale = lerp(1.0, bezierCurvatureScale, topLeftFy / extendedFraction)
         val topLeftXBezierCurvatureScale = lerp(1.0, bezierCurvatureScale, topLeftFx / extendedFraction)
@@ -130,6 +134,12 @@ data class G2Continuity(
                     Point(x - bezier.p2.x * topLeft, y + bezier.p2.y * topLeft),
                     Point(x - bezier.p1.x * topLeft, y + bezier.p1.y * topLeft),
                     Point(
+                        // Since [bezier.p0.x] may be smaller than [topLeftDx] (they are all negative), the point will
+                        // be outside of the safe area, so we need to handle it.
+                        // Fortunately, in this **special** G2 continuity case, the control points P_1, P_2 of the
+                        // cubic Bezier curve are irrelevant of P_0 (only for horizontal coordinate, because the
+                        // vertical coordinate should always be 0), so we can just clamp the horizontal coordinate of
+                        // P_0 to a safe value without loss of G2 continuity.
                         x - (bezier.p0.x * topLeft).fastCoerceAtLeast(topLeftDx),
                         y + bezier.p0.y * topLeft
                     )
