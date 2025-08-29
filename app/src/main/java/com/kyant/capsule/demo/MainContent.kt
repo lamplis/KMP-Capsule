@@ -67,7 +67,7 @@ fun MainContent() {
         val circleFraction = remember { mutableFloatStateOf(0.18f) }
         val extendedFraction = remember { mutableFloatStateOf(0.5f) }
         val bezierCurvatureScale = remember { mutableFloatStateOf(1.15f) }
-        val circleCurvatureScale = remember { mutableFloatStateOf(1.15f) }
+        val circleCurvatureScale = remember { mutableFloatStateOf(1.16f) }
 
         val aspectRatio = remember { mutableFloatStateOf(1.618f) }
 
@@ -276,7 +276,7 @@ fun MainContent() {
                             circleFraction.floatValue = 0.18f
                             extendedFraction.floatValue = 0.5f
                             bezierCurvatureScale.floatValue = 1.15f
-                            circleCurvatureScale.floatValue = 1.15f
+                            circleCurvatureScale.floatValue = 1.16f
                         }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
