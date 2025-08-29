@@ -74,38 +74,29 @@ internal data class CubicBezier(
                 lambda0 = sqrt(-C / A)
                 lambda3 = sqrt(-D / B)
             } else {
-                when {
-                    A == 0.0 -> {
-                        lambda0 = -D / G - B * C * C / G / G / G
-                        lambda3 = -C / G
+                if (A == 0.0 || B == 0.0) {
+                    lambda0 = -D / G - B * C * C / G / G / G
+                    lambda3 = -C / G - A * D * D / G / G / G
+                } else {
+                    val a = 2.0 * D / B
+                    val b = G * G * G / A / B / B
+                    val c = (A * D * D + C * G * G) / A / B / B
+                    val p = -a * a / 12.0 - c
+                    val q = -a * a * a / 108.0 + a * c / 3.0 - b * b / 8.0
+                    val w = cbrt(-q / 2.0 + sqrt((q * q / 4.0 + p * p * p / 27.0).fastCoerceAtLeast(0.0)))
+                    val y = a / 6 + w - p / w / 3.0
+                    val x1 = 0.5 * (-sqrt(y + y - a) + sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                    val x2 = 0.5 * (-sqrt(y + y - a) - sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                    val x3 = 0.5 * (sqrt(y + y - a) + sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                    val x4 = 0.5 * (sqrt(y + y - a) - sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                    lambda3 = when {
+                        x1 >= 0.0 && x1 <= 1.0 -> x1
+                        x2 >= 0.0 && x2 <= 1.0 -> x2
+                        x3 >= 0.0 && x3 <= 1.0 -> x3
+                        x4 >= 0.0 && x4 <= 1.0 -> x4
+                        else -> 0.0
                     }
-
-                    B == 0.0 -> {
-                        lambda0 = -D / G
-                        lambda3 = -C / G - A * D * D / G / G / G
-                    }
-
-                    else -> {
-                        val a = 2.0 * D / B
-                        val b = G * G * G / A / B / B
-                        val c = (A * D * D + C * G * G) / A / B / B
-                        val p = -a * a / 12.0 - c
-                        val q = -a * a * a / 108.0 + a * c / 3.0 - b * b / 8.0
-                        val w = cbrt(-q / 2.0 + sqrt((q * q / 4.0 + p * p * p / 27.0).fastCoerceAtLeast(0.0)))
-                        val y = a / 6 + w - p / (3.0 * w)
-                        val x1 = 0.5 * (-sqrt(y + y - a) + sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
-                        val x2 = 0.5 * (-sqrt(y + y - a) - sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
-                        val x3 = 0.5 * (sqrt(y + y - a) + sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
-                        val x4 = 0.5 * (sqrt(y + y - a) - sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
-                        lambda3 = when {
-                            x1 >= 0.0 -> x1
-                            x2 >= 0.0 -> x2
-                            x3 >= 0.0 -> x3
-                            x4 >= 0.0 -> x4
-                            else -> 0.0
-                        }
-                        lambda0 = (-D - B * lambda3 * lambda3) / G
-                    }
+                    lambda0 = (-D - B * lambda3 * lambda3) / G
                 }
             }
 
@@ -147,38 +138,29 @@ internal data class CubicBezier(
                 lambda0 = sqrt(-C / A)
                 lambda3 = sqrt(-D / B)
             } else {
-                when {
-                    A == 0.0 -> {
-                        lambda0 = -D / G - B * C * C / G / G / G
-                        lambda3 = -C / G
+                if (A == 0.0 || B == 0.0) {
+                    lambda0 = -D / G - B * C * C / G / G / G
+                    lambda3 = -C / G - A * D * D / G / G / G
+                } else {
+                    val a = 2.0 * D / B
+                    val b = G * G * G / A / B / B
+                    val c = (A * D * D + C * G * G) / A / B / B
+                    val p = -a * a / 12.0 - c
+                    val q = -a * a * a / 108.0 + a * c / 3.0 - b * b / 8.0
+                    val w = cbrt(-q / 2.0 + sqrt((q * q / 4.0 + p * p * p / 27.0).fastCoerceAtLeast(0.0)))
+                    val y = a / 6 + w - p / w / 3.0
+                    val x1 = 0.5 * (-sqrt(y + y - a) + sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                    val x2 = 0.5 * (-sqrt(y + y - a) - sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
+                    val x3 = 0.5 * (sqrt(y + y - a) + sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                    val x4 = 0.5 * (sqrt(y + y - a) - sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
+                    lambda3 = when {
+                        x1 >= 0.0 && x1 <= 1.0 -> x1
+                        x2 >= 0.0 && x2 <= 1.0 -> x2
+                        x3 >= 0.0 && x3 <= 1.0 -> x3
+                        x4 >= 0.0 && x4 <= 1.0 -> x4
+                        else -> 0.0
                     }
-
-                    B == 0.0 -> {
-                        lambda0 = -D / G
-                        lambda3 = -C / G - A * D * D / G / G / G
-                    }
-
-                    else -> {
-                        val a = 2.0 * D / B
-                        val b = G * G * G / A / B / B
-                        val c = (A * D * D + C * G * G) / A / B / B
-                        val p = -a * a / 12.0 - c
-                        val q = -a * a * a / 108.0 + a * c / 3.0 - b * b / 8.0
-                        val w = cbrt(-q / 2.0 + sqrt((q * q / 4.0 + p * p * p / 27.0).fastCoerceAtLeast(0.0)))
-                        val y = a / 6 + w - p / (3.0 * w)
-                        val x1 = 0.5 * (-sqrt(y + y - a) + sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
-                        val x2 = 0.5 * (-sqrt(y + y - a) - sqrt(-y - y - a + (b + b) / sqrt(y + y - a)))
-                        val x3 = 0.5 * (sqrt(y + y - a) + sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
-                        val x4 = 0.5 * (sqrt(y + y - a) - sqrt(-y - y - a - (b + b) / sqrt(y + y - a)))
-                        lambda3 = when {
-                            x1 >= 0.0 -> x1
-                            x2 >= 0.0 -> x2
-                            x3 >= 0.0 -> x3
-                            x4 >= 0.0 -> x4
-                            else -> 0.0
-                        }
-                        lambda0 = (-D - B * lambda3 * lambda3) / G
-                    }
+                    lambda0 = (-D - B * lambda3 * lambda3) / G
                 }
             }
 

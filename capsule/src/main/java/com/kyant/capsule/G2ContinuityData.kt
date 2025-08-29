@@ -28,7 +28,7 @@ internal class G2ContinuityData(
                 Point(sin, 1.0 - cos)
             )
         } else {
-            val endTangentialAngle =
+            val endTangent =
                 if (circleFraction > 0.0) {
                     Segment.IntrinsicArc(
                         from = Point(sin, 1.0 - cos),
@@ -45,7 +45,7 @@ internal class G2ContinuityData(
                 start = Point(-extendedFraction, 0.0),
                 end = Point(sin, 1.0 - cos),
                 startTangent = Point(1.0, 0.0),
-                endTangent = endTangentialAngle,
+                endTangent = endTangent,
                 startCurvature = 0.0,
                 endCurvature = bezierCurvatureScale
             )
