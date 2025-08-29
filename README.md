@@ -43,8 +43,13 @@ ContinuousCapsule
 Custom continuity:
 
 ```kotlin
-val g1 = G1Continuity
-val g2 = G2Continuity(circleFraction = 0.25f, extendedFraction = 1f, /*...*/)
+val g1 = G1Continuity // no corner smoothness
+val g2 = G2Continuity(
+    circleFraction = 0.18,
+    extendedFraction = 0.5,
+    bezierCurvatureScale = 1.15,
+    circleCurvatureScale = 1.15
+)
 
 // create shapes with custom continuity
 ContinuousRoundedRectangle(16.dp, continuity = g2)
