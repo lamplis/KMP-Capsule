@@ -15,7 +15,7 @@ data class G2Continuity(
     @param:FloatRange(from = 0.0, fromInclusive = false) val circleCurvatureScale: Double = 1.16
 ) : Continuity {
 
-    override val hasSmoothness: Boolean = circleFraction < 1f && extendedFraction > 0f
+    override val hasSmoothness: Boolean = circleFraction < 1.0 && extendedFraction > 0.0
 
     private val data =
         G2ContinuityData(
@@ -36,7 +36,7 @@ data class G2Continuity(
         val centerX = width * 0.5
         val centerY = height * 0.5
 
-        val hasCircle = circleFraction > 0f
+        val hasCircle = circleFraction > 0.0
         val extendedFraction = extendedFraction
 
         // safe extended fraction for each corner
