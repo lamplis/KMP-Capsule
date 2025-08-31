@@ -236,7 +236,7 @@ fun SvgExportDialog(
                         .background(Color(0xFF90CAF9))
                         .clickable {
                             val svg = currentPathSegments.toSvg(asDocument = true)
-                            val tempFile = File(context.cacheDir, "shared.svg").apply {
+                            val tempFile = File(context.cacheDir, "continuous_rounded_rect.svg").apply {
                                 writeBytes(svg.toByteArray())
                             }
                             val uri = FileProvider.getUriForFile(
