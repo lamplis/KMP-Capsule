@@ -218,7 +218,7 @@ fun SvgExportDialog(
                             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                                 addCategory(Intent.CATEGORY_OPENABLE)
                                 type = "image/svg+xml"
-                                putExtra(Intent.EXTRA_TITLE, "capsule.svg")
+                                putExtra(Intent.EXTRA_TITLE, "continuous_rounded_rect.svg")
                             }
                             createFileLauncher.launch(intent)
                         }
