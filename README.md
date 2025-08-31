@@ -45,10 +45,11 @@ Custom continuity:
 ```kotlin
 val g1 = G1Continuity // no corner smoothness
 val g2 = G2Continuity(
-    circleFraction = 0.18,
     extendedFraction = 0.5,
-    bezierCurvatureScale = 1.15,
-    circleCurvatureScale = 1.15
+    arcFraction = 0.45,
+    bezierCurvatureScale = 1.10,
+    arcCurvatureScale = 1.10,
+    fixedCircleFractionForCapsule = false
 )
 
 // create shapes with custom continuity
@@ -56,7 +57,9 @@ ContinuousRoundedRectangle(16.dp, continuity = g2)
 ContinuousCapsule(continuity = g2)
 ```
 
-## Performance
+## Tips
+
+### Performance
 
 Drawing cubic Bézier curves on Android performs poorly. However, the Capsule library uses a very efficient method to
 calculate the control points, achieving optimal theoretical performance.
@@ -64,3 +67,15 @@ calculate the control points, achieving optimal theoretical performance.
 When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
 Use `animatedShape.copy(continuity = G1Continuity)` to temporarily disable corner smoothing during the
 animation.
+
+### Exact G2 continuity
+
+The following code creates an exact (perfect) G2 continuity. However, it is not recommended to use this in practice
+because its curvature is not optimal.
+
+```kotlin
+val exactG2 = G2Continuity(/* ... */).copy(
+    bezierCurvatureScale = 1.0,
+    arcCurvatureScale = 1.0
+)
+```
