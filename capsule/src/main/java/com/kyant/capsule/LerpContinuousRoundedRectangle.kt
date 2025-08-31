@@ -30,7 +30,7 @@ private data class LerpContinuousRoundedRectangle(
     continuity = when (fraction) {
         0f -> start.continuity
         1f -> stop.continuity
-        else -> start.continuity.lerp(stop.continuity, fraction)
+        else -> start.continuity.lerp(stop.continuity, fraction.toDouble())
     }
 )
 

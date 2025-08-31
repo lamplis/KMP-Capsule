@@ -1,5 +1,6 @@
-package com.kyant.capsule
+package com.kyant.capsule.core
 
+import com.kyant.capsule.lerp
 import kotlin.math.sqrt
 
 data class Point(val x: Double, val y: Double) {

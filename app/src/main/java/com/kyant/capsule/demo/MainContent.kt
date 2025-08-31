@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,9 +44,8 @@ import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import com.kyant.capsule.ContinuousCapsule
-import com.kyant.capsule.ContinuousRoundedRectangle
-import com.kyant.capsule.G2Continuity
-import com.kyant.capsule.toPath
+import com.kyant.capsule.continuities.G2Continuity
+import com.kyant.capsule.path.toPath
 
 @Composable
 fun MainContent() {
@@ -63,16 +63,29 @@ fun MainContent() {
         var showBaseline by remember { mutableStateOf(false) }
         var showCurvatureComb by remember { mutableStateOf(true) }
 
+        val defaultContinuity = remember { G2Continuity() }
         val radiusDp = remember { mutableFloatStateOf(40f) }
-        val circleFraction = remember { mutableFloatStateOf(0.18f) }
-        val extendedFraction = remember { mutableFloatStateOf(0.5f) }
-        val bezierCurvatureScale = remember { mutableFloatStateOf(1.15f) }
-        val circleCurvatureScale = remember { mutableFloatStateOf(1.16f) }
+        val extendedFraction = remember { mutableFloatStateOf(defaultContinuity.extendedFraction.toFloat()) }
+        val arcFraction = remember { mutableFloatStateOf(defaultContinuity.arcFraction.toFloat()) }
+        val bezierCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.bezierCurvatureScale.toFloat()) }
+        val arcCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.arcCurvatureScale.toFloat()) }
+        val currentContinuity by remember {
+            derivedStateOf {
+                G2Continuity(
+                    extendedFraction = extendedFraction.floatValue.toDouble(),
+                    arcFraction = arcFraction.floatValue.toDouble(),
+                    bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
+                    arcCurvatureScale = arcCurvatureScale.floatValue.toDouble()
+                )
+            }
+        }
 
         val aspectRatio = remember { mutableFloatStateOf(1.618f) }
 
         var scale by remember { mutableFloatStateOf(1f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
+
+        var isSvgExportDialogVisible by remember { mutableStateOf(false) }
 
         Box(
             Modifier
@@ -111,20 +124,10 @@ fun MainContent() {
                         val radiusPx =
                             radiusDp.floatValue.dp.toPx().toDouble()
                                 .fastCoerceIn(0.0, size.minDimension.toDouble() * 0.5)
-                        val continuity = G2Continuity(
-                            circleFraction = circleFraction.floatValue.toDouble(),
-                            extendedFraction = extendedFraction.floatValue.toDouble(),
-                            bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
-                            circleCurvatureScale = circleCurvatureScale.floatValue.toDouble()
-                        )
-                        val shape = ContinuousRoundedRectangle(
-                            radiusPx.toFloat(),
-                            continuity = continuity
-                        )
-                        val pathSegments = continuity.createRoundedRectanglePathSegments(
+                        val pathSegments = currentContinuity.createRoundedRectanglePathSegments(
                             width = size.width.toDouble(),
                             height = size.height.toDouble(),
-                            topLeft = shape.topStart.toPx(size, this).toDouble(),
+                            topLeft = radiusPx,
                             topRight = radiusPx,
                             bottomRight = radiusPx,
                             bottomLeft = radiusPx
@@ -222,27 +225,27 @@ fun MainContent() {
                     { "${"%.0f".format(it)}dp" },
                 )
                 Slider(
-                    circleFraction,
-                    0f..1f,
-                    "Circle fraction",
-                    { "%.1f".format(it * 100f) + "%" },
-                )
-                Slider(
                     extendedFraction,
                     0f..2f,
                     "Extended fraction",
                     { "%.1f".format(it * 100f) + "%" },
                 )
                 Slider(
+                    arcFraction,
+                    0f..1f,
+                    "Arc fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+                Slider(
                     bezierCurvatureScale,
-                    0.1f..3f,
+                    0f..3f,
                     "Bezier curvature scale",
                     { "%.2f".format(it) },
                 )
                 Slider(
-                    circleCurvatureScale,
-                    0.1f..3f,
-                    "Circle curvature scale",
+                    arcCurvatureScale,
+                    0f..3f,
+                    "Arc curvature scale",
                     { "%.2f".format(it) },
                 )
             }
@@ -273,16 +276,35 @@ fun MainContent() {
                         .background(Color(0xFF90CAF9))
                         .clickable {
                             radiusDp.floatValue = 40f
-                            circleFraction.floatValue = 0.18f
-                            extendedFraction.floatValue = 0.5f
-                            bezierCurvatureScale.floatValue = 1.15f
-                            circleCurvatureScale.floatValue = 1.16f
+                            extendedFraction.floatValue = defaultContinuity.extendedFraction.toFloat()
+                            arcFraction.floatValue = defaultContinuity.arcFraction.toFloat()
+                            bezierCurvatureScale.floatValue = defaultContinuity.bezierCurvatureScale.toFloat()
+                            arcCurvatureScale.floatValue = defaultContinuity.arcCurvatureScale.toFloat()
                         }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     BasicText("Reset parameters")
+                }
+
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable { isSvgExportDialogVisible = true }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText("Export SVG")
+                }
+
+                if (isSvgExportDialogVisible) {
+                    SvgExportDialog(
+                        onDismissRequest = { isSvgExportDialogVisible = false },
+                        continuity = { currentContinuity }
+                    )
                 }
             }
         }

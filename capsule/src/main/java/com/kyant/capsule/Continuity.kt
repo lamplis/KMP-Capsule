@@ -4,11 +4,14 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
+import com.kyant.capsule.continuities.G2Continuity
+import com.kyant.capsule.path.PathSegments
+import com.kyant.capsule.path.toPath
 
 @Immutable
 interface Continuity {
 
-    val hasSmoothness: Boolean
+    val isValid: Boolean
 
     fun createRoundedRectanglePathSegments(
         width: Double,
@@ -17,9 +20,8 @@ interface Continuity {
         topRight: Double,
         bottomRight: Double,
         bottomLeft: Double
-    ): PathSegments = emptyList()
+    ): PathSegments
 
-    @Deprecated("Use createRoundedRectanglePathSegments instead")
     fun createRoundedRectangleOutline(
         size: Size,
         topLeft: Float,
@@ -27,40 +29,41 @@ interface Continuity {
         bottomRight: Float,
         bottomLeft: Float
     ): Outline {
-        val path = createRoundedRectanglePathSegments(
-            width = size.width.toDouble(),
-            height = size.height.toDouble(),
-            topLeft = topLeft.toDouble(),
-            topRight = topRight.toDouble(),
-            bottomRight = bottomRight.toDouble(),
-            bottomLeft = bottomLeft.toDouble()
-        ).toPath()
+        val path =
+            createRoundedRectanglePathSegments(
+                width = size.width.toDouble(),
+                height = size.height.toDouble(),
+                topLeft = topLeft.toDouble(),
+                topRight = topRight.toDouble(),
+                bottomRight = bottomRight.toDouble(),
+                bottomLeft = bottomLeft.toDouble()
+            ).toPath()
         return Outline.Generic(path)
     }
 
     fun createHorizontalCapsuleOutline(size: Size): Outline {
         val cornerRadius = size.height * 0.5f
         return createRoundedRectangleOutline(
-            size,
-            cornerRadius,
-            cornerRadius,
-            cornerRadius,
-            cornerRadius
+            size = size,
+            topLeft = cornerRadius,
+            topRight = cornerRadius,
+            bottomRight = cornerRadius,
+            bottomLeft = cornerRadius
         )
     }
 
     fun createVerticalCapsuleOutline(size: Size): Outline {
         val cornerRadius = size.width * 0.5f
         return createRoundedRectangleOutline(
-            size,
-            cornerRadius,
-            cornerRadius,
-            cornerRadius,
-            cornerRadius
+            size = size,
+            topLeft = cornerRadius,
+            topRight = cornerRadius,
+            bottomRight = cornerRadius,
+            bottomLeft = cornerRadius
         )
     }
 
-    fun lerp(stop: Continuity, fraction: Float): Continuity
+    fun lerp(stop: Continuity, fraction: Double): Continuity
 
     companion object {
 

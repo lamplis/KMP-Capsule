@@ -1,8 +1,8 @@
 package com.kyant.capsule.demo
 
 import androidx.compose.ui.graphics.Path
-import com.kyant.capsule.PathSegments
-import com.kyant.capsule.Point
+import com.kyant.capsule.core.Point
+import com.kyant.capsule.path.PathSegments
 import kotlin.math.atan2
 
 internal fun PathSegments.toCurvatureComb(

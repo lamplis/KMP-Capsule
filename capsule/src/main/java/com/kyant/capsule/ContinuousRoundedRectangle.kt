@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
@@ -18,6 +19,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
+import com.kyant.capsule.continuities.G1Continuity
+import com.kyant.capsule.path.toPath
 import kotlin.math.min
 
 @Immutable
@@ -59,12 +62,12 @@ open class ContinuousRoundedRectangle(
 
         // normal rounded rectangle or circle
         if (
-            !continuity.hasSmoothness ||
+            !continuity.isValid ||
             (width == height && topLeft == centerX && topLeft == topRight && bottomLeft == bottomRight)
         ) {
             return Outline.Rounded(
                 RoundRect(
-                    rect = size.toRect(),
+                    rect = Rect(0f, 0f, width, height),
                     topLeft = CornerRadius(topLeft),
                     topRight = CornerRadius(topRight),
                     bottomRight = CornerRadius(bottomRight),
@@ -74,14 +77,15 @@ open class ContinuousRoundedRectangle(
         }
 
         // continuous rounded rectangle
-        val path = continuity.createRoundedRectanglePathSegments(
-            width = size.width.toDouble(),
-            height = size.height.toDouble(),
-            topLeft = topLeft.toDouble(),
-            topRight = topRight.toDouble(),
-            bottomRight = bottomRight.toDouble(),
-            bottomLeft = bottomLeft.toDouble()
-        ).toPath()
+        val path =
+            continuity.createRoundedRectanglePathSegments(
+                width = size.width.toDouble(),
+                height = size.height.toDouble(),
+                topLeft = topLeft.toDouble(),
+                topRight = topRight.toDouble(),
+                bottomRight = bottomRight.toDouble(),
+                bottomLeft = bottomLeft.toDouble()
+            ).toPath()
         return Outline.Generic(path)
     }
 
@@ -194,7 +198,7 @@ private data class ContinuousCapsuleImpl(
 
         // normal capsule or circle
         if (
-            !continuity.hasSmoothness ||
+            !continuity.isValid ||
             (width == height && topStart == centerX && topStart == topEnd && bottomStart == bottomEnd)
         ) {
             return Outline.Rounded(
