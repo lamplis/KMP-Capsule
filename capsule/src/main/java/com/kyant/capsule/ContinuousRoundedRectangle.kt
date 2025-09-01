@@ -49,7 +49,8 @@ open class ContinuousRoundedRectangle(
         val topRight = (if (layoutDirection == Ltr) topEnd else topStart).fastCoerceIn(0f, maxRadius)
         val bottomRight = (if (layoutDirection == Ltr) bottomEnd else bottomStart).fastCoerceIn(0f, maxRadius)
         val bottomLeft = (if (layoutDirection == Ltr) bottomStart else bottomEnd).fastCoerceIn(0f, maxRadius)
-        return continuity.createGeneralRoundedRectangleOutline(
+
+        return continuity.createRoundedRectangleOutline(
             size = size,
             topLeft = topLeft,
             topRight = topRight,
@@ -169,7 +170,7 @@ private data class ContinuousCapsuleImpl(
         bottomEnd: Float,
         bottomStart: Float,
         layoutDirection: LayoutDirection
-    ): Outline = continuity.createGeneralCapsuleOutline(size)
+    ): Outline = continuity.createCapsuleOutline(size)
 
     override fun toString(): String {
         return "ContinuousCapsule(continuity=$continuity)"

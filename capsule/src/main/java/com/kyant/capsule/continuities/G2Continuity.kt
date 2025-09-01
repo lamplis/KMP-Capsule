@@ -4,6 +4,7 @@ import androidx.annotation.FloatRange
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceIn
+import com.kyant.capsule.AdvancedContinuity
 import com.kyant.capsule.Continuity
 import com.kyant.capsule.core.CubicBezier
 import com.kyant.capsule.core.Point
@@ -24,7 +25,7 @@ data class G2Continuity(
     @param:FloatRange(from = 0.0) val bezierCurvatureScale: Double = 1.10,
     @param:FloatRange(from = 0.0, fromInclusive = false) val arcCurvatureScale: Double = 1.10,
     @param:FloatRange(from = 0.0, to = 1.0) val capsuleArcFraction: Double = arcFraction
-) : Continuity(isComplex = true) {
+) : AdvancedContinuity() {
 
     private val bezier = generateG2BaseBezier(
         extendedFraction = extendedFraction,
@@ -67,7 +68,7 @@ data class G2Continuity(
         )
     }
 
-    override fun createRoundedRectanglePathSegments(
+    override fun createStandardRoundedRectanglePathSegments(
         width: Double,
         height: Double,
         topLeft: Double,
