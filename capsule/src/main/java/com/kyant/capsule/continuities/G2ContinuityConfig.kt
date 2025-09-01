@@ -65,10 +65,9 @@ data class G2ContinuityConfig(
             val dy = 1.0 - cos
             val a3 = -dy
             val b3 = dy * endTangent.x - dx * endTangent.y
-            val lambda0 = -b3 / a2 - b1 * a3 * a3 / a2 / a2 / a2
             CubicBezier(
                 Point(-extendedFraction, 0.0),
-                Point(-extendedFraction + lambda0, 0.0),
+                Point(-extendedFraction + (-b3 / a2 - b1 * a3 * a3 / a2 / a2 / a2), 0.0),
                 Point(sin - dy * (endTangent.x / endTangent.y), 0.0),
                 Point(sin, 1.0 - cos)
             )

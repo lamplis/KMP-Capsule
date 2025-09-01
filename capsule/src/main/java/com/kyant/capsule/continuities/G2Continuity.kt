@@ -24,7 +24,7 @@ data class G2Continuity(
     private fun resolveBezier(config: G2ContinuityConfig) =
         when (config) {
             this.config -> this.config.bezier
-            this.capsuleConfig -> this.config.bezier
+            this.capsuleConfig -> this.capsuleConfig.bezier
             else -> config.bezier
         }
 

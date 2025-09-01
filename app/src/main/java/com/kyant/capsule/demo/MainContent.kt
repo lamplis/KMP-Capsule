@@ -236,24 +236,6 @@ fun MainContent() {
                         .clip(ContinuousCapsule)
                         .background(Color(0xFF90CAF9))
                         .clickable {
-                            scale = 0.75f
-                            offset = Offset.Zero
-                            aspectRatio.floatValue = 1.618f
-                        }
-                        .height(40.dp)
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BasicText("Reset scale and position")
-                }
-
-                Box(
-                    Modifier
-                        .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
-                        .clickable {
-                            radiusDp.floatValue = 48f
-
                             with(defaultContinuity.config) {
                                 extendedFraction.floatValue = this.extendedFraction.toFloat()
                                 arcFraction.floatValue = this.arcFraction.toFloat()
@@ -270,7 +252,7 @@ fun MainContent() {
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Reset parameters")
+                    BasicText("Reset configs")
                 }
 
                 Box(
@@ -310,19 +292,41 @@ fun MainContent() {
                     "Aspect ratio",
                     { "%.3f".format(it) },
                 )
-                Box(
-                    Modifier
-                        .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
-                        .clickable { invertedAspectRatio = !invertedAspectRatio }
-                        .height(40.dp)
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
+
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    BasicText(
-                        if (invertedAspectRatio) "Inverted aspect ratio"
-                        else "Invert aspect ratio"
-                    )
+                    Box(
+                        Modifier
+                            .clip(ContinuousCapsule)
+                            .background(Color(0xFF90CAF9))
+                            .clickable {
+                                radiusDp.floatValue = 48f
+                                aspectRatio.floatValue = 1.618f
+                                scale = 0.75f
+                                offset = Offset.Zero
+                            }
+                            .height(40.dp)
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BasicText("Reset")
+                    }
+                    Box(
+                        Modifier
+                            .clip(ContinuousCapsule)
+                            .background(Color(0xFF90CAF9))
+                            .clickable { invertedAspectRatio = !invertedAspectRatio }
+                            .height(40.dp)
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BasicText(
+                            if (invertedAspectRatio) "Inverted aspect ratio"
+                            else "Invert aspect ratio"
+                        )
+                    }
                 }
             }
 
