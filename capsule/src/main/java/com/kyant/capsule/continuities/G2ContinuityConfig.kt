@@ -78,16 +78,16 @@ data class G2ContinuityConfig(
 
         val RoundedRectangle: G2ContinuityConfig =
             G2ContinuityConfig(
-                extendedFraction = 0.5,
-                arcFraction = 1.0 / 3.0,
-                bezierCurvatureScale = 1.11,
-                arcCurvatureScale = 1.11
+                extendedFraction = 0.75,
+                arcFraction = 0.25,
+                bezierCurvatureScale = 0.96,
+                arcCurvatureScale = 1.08
             )
 
         val Capsule: G2ContinuityConfig =
             G2ContinuityConfig(
-                extendedFraction = 1.0 / 3.0,
-                arcFraction = 0.0,
+                extendedFraction = 0.75,
+                arcFraction = 0.125,
                 bezierCurvatureScale = 1.0,
                 arcCurvatureScale = 1.0
             )
