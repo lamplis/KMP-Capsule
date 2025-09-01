@@ -72,7 +72,7 @@ fun SvgExportDialog(
         val currentPathSegments by remember {
             derivedStateOf {
                 val radius = radius.fastCoerceIn(0.0, min(width, height) * 0.5)
-                continuity().createRoundedRectanglePathSegments(
+                continuity().createGeneralRoundedRectanglePathSegments(
                     width = width,
                     height = height,
                     topLeft = radius,

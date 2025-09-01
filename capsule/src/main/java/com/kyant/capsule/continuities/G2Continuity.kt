@@ -24,13 +24,7 @@ data class G2Continuity(
     @param:FloatRange(from = 0.0) val bezierCurvatureScale: Double = 1.10,
     @param:FloatRange(from = 0.0, fromInclusive = false) val arcCurvatureScale: Double = 1.10,
     @param:FloatRange(from = 0.0, to = 1.0) val capsuleArcFraction: Double = arcFraction
-) : Continuity {
-
-    override val isValid: Boolean
-        get() = extendedFraction > 0.0 &&
-                arcFraction >= 0.0 && arcFraction < 1.0 &&
-                bezierCurvatureScale >= 0.0 &&
-                arcCurvatureScale >= 0.0
+) : Continuity(isComplex = true) {
 
     private val bezier = generateG2BaseBezier(
         extendedFraction = extendedFraction,

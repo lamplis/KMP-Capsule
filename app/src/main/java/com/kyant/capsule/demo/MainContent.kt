@@ -127,7 +127,7 @@ fun MainContent() {
                         val radiusPx =
                             radiusDp.floatValue.dp.toPx().toDouble()
                                 .fastCoerceIn(0.0, size.minDimension.toDouble() * 0.5)
-                        val pathSegments = currentContinuity.createRoundedRectanglePathSegments(
+                        val pathSegments = currentContinuity.createGeneralRoundedRectanglePathSegments(
                             width = size.width.toDouble(),
                             height = size.height.toDouble(),
                             topLeft = radiusPx,

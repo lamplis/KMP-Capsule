@@ -7,11 +7,7 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.geometry.center
 import androidx.compose.ui.geometry.toRect
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.unit.Dp
@@ -19,8 +15,6 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.LayoutDirection.Ltr
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
-import com.kyant.capsule.continuities.G1Continuity
-import com.kyant.capsule.path.toPath
 import kotlin.math.min
 
 @Immutable
@@ -50,43 +44,18 @@ open class ContinuousRoundedRectangle(
             return Outline.Rectangle(size.toRect())
         }
 
-        val (width, height) = size
-        val centerX = width * 0.5f
-        val centerY = height * 0.5f
-
-        val maxR = min(centerX, centerY)
-        val topLeft = (if (layoutDirection == Ltr) topStart else topEnd).fastCoerceIn(0f, maxR)
-        val topRight = (if (layoutDirection == Ltr) topEnd else topStart).fastCoerceIn(0f, maxR)
-        val bottomRight = (if (layoutDirection == Ltr) bottomEnd else bottomStart).fastCoerceIn(0f, maxR)
-        val bottomLeft = (if (layoutDirection == Ltr) bottomStart else bottomEnd).fastCoerceIn(0f, maxR)
-
-        // normal rounded rectangle or circle
-        if (
-            !continuity.isValid ||
-            (width == height && topLeft == centerX && topLeft == topRight && bottomLeft == bottomRight)
-        ) {
-            return Outline.Rounded(
-                RoundRect(
-                    rect = Rect(0f, 0f, width, height),
-                    topLeft = CornerRadius(topLeft),
-                    topRight = CornerRadius(topRight),
-                    bottomRight = CornerRadius(bottomRight),
-                    bottomLeft = CornerRadius(bottomLeft)
-                )
-            )
-        }
-
-        // continuous rounded rectangle
-        val path =
-            continuity.createRoundedRectanglePathSegments(
-                width = size.width.toDouble(),
-                height = size.height.toDouble(),
-                topLeft = topLeft.toDouble(),
-                topRight = topRight.toDouble(),
-                bottomRight = bottomRight.toDouble(),
-                bottomLeft = bottomLeft.toDouble()
-            ).toPath()
-        return Outline.Generic(path)
+        val maxRadius = min(size.width, size.height) * 0.5f
+        val topLeft = (if (layoutDirection == Ltr) topStart else topEnd).fastCoerceIn(0f, maxRadius)
+        val topRight = (if (layoutDirection == Ltr) topEnd else topStart).fastCoerceIn(0f, maxRadius)
+        val bottomRight = (if (layoutDirection == Ltr) bottomEnd else bottomStart).fastCoerceIn(0f, maxRadius)
+        val bottomLeft = (if (layoutDirection == Ltr) bottomStart else bottomEnd).fastCoerceIn(0f, maxRadius)
+        return continuity.createGeneralRoundedRectangleOutline(
+            size = size,
+            topLeft = topLeft,
+            topRight = topRight,
+            bottomRight = bottomRight,
+            bottomLeft = bottomLeft
+        )
     }
 
     override fun copy(
@@ -144,21 +113,31 @@ open class ContinuousRoundedRectangle(
 
     override fun toString(): String {
         return "ContinuousRoundedRectangle(topStart=$topStart, topEnd=$topEnd, bottomEnd=$bottomEnd, " +
-                "bottomStart=$bottomStart, cornerSmoothing=$continuity)"
+                "bottomStart=$bottomStart, continuity=$continuity)"
     }
 }
 
+@Stable
+val ContinuousRectangle: ContinuousRoundedRectangle = ContinuousRectangleImpl()
+
+@Suppress("FunctionName")
+@Stable
+fun ContinuousRectangle(continuity: Continuity = Continuity.Default): ContinuousRoundedRectangle =
+    ContinuousRectangleImpl(continuity)
+
 @Immutable
-data object ContinuousRectangle : ContinuousRoundedRectangle(
+private data class ContinuousRectangleImpl(
+    override val continuity: Continuity = Continuity.Default
+) : ContinuousRoundedRectangle(
     topStart = ZeroCornerSize,
     topEnd = ZeroCornerSize,
     bottomEnd = ZeroCornerSize,
     bottomStart = ZeroCornerSize,
-    continuity = G1Continuity
+    continuity = continuity
 ) {
 
     override fun toString(): String {
-        return "ContinuousRectangle"
+        return "ContinuousRectangle(continuity=$continuity)"
     }
 }
 
@@ -169,9 +148,8 @@ val ContinuousCapsule: ContinuousRoundedRectangle = ContinuousCapsule()
 
 @Suppress("FunctionName")
 @Stable
-fun ContinuousCapsule(
-    continuity: Continuity = Continuity.Default
-): ContinuousRoundedRectangle = ContinuousCapsuleImpl(continuity)
+fun ContinuousCapsule(continuity: Continuity = Continuity.Default): ContinuousRoundedRectangle =
+    ContinuousCapsuleImpl(continuity)
 
 @Immutable
 private data class ContinuousCapsuleImpl(
@@ -191,36 +169,10 @@ private data class ContinuousCapsuleImpl(
         bottomEnd: Float,
         bottomStart: Float,
         layoutDirection: LayoutDirection
-    ): Outline {
-        val (width, height) = size
-        val (centerX, centerY) = size.center
-        val radius = min(centerX, centerY)
-
-        // normal capsule or circle
-        if (
-            !continuity.isValid ||
-            (width == height && topStart == centerX && topStart == topEnd && bottomStart == bottomEnd)
-        ) {
-            return Outline.Rounded(
-                RoundRect(
-                    rect = size.toRect(),
-                    radiusX = radius,
-                    radiusY = radius
-                )
-            )
-        }
-
-        // continuous capsule
-        val isHorizontalCapsule = width > height
-        return if (isHorizontalCapsule) {
-            continuity.createHorizontalCapsuleOutline(size)
-        } else {
-            continuity.createVerticalCapsuleOutline(size)
-        }
-    }
+    ): Outline = continuity.createGeneralCapsuleOutline(size)
 
     override fun toString(): String {
-        return "ContinuousCapsule(cornerSmoothing=$continuity)"
+        return "ContinuousCapsule(continuity=$continuity)"
     }
 }
 

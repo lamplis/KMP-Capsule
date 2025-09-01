@@ -1,14 +1,14 @@
 package com.kyant.capsule.continuities
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.graphics.Outline
 import com.kyant.capsule.Continuity
 import com.kyant.capsule.path.PathSegments
 import com.kyant.capsule.path.buildPathSegments
+import com.kyant.capsule.path.toPath
 
 @Immutable
-data object G0Continuity : Continuity {
-
-    override val isValid: Boolean = true
+data object G0Continuity : Continuity(isComplex = false) {
 
     override fun createRoundedRectanglePathSegments(
         width: Double,
@@ -37,6 +37,22 @@ data object G0Continuity : Continuity {
             }
             close()
         }
+    }
+
+    override fun createCirclePathSegments(size: Double): PathSegments {
+        val radius = size * 0.5
+        return buildPathSegments {
+            moveTo(0.0, radius)
+            lineTo(radius, 0.0)
+            lineTo(size, radius)
+            close()
+        }
+    }
+
+    override fun createCircleOutline(size: Float): Outline {
+        val radius = size * 0.5
+        val path = createCirclePathSegments(radius).toPath()
+        return Outline.Generic(path)
     }
 
     override fun lerp(stop: Continuity, fraction: Double): Continuity {

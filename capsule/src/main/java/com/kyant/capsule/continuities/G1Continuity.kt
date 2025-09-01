@@ -14,9 +14,7 @@ import com.kyant.capsule.path.buildPathSegments
 import kotlin.math.PI
 
 @Immutable
-data object G1Continuity : Continuity {
-
-    override val isValid: Boolean = true
+data object G1Continuity : Continuity(isComplex = false) {
 
     override fun createRoundedRectanglePathSegments(
         width: Double,
