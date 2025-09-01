@@ -45,11 +45,16 @@ Custom continuity:
 ```kotlin
 val g1 = G1Continuity // no corner smoothness
 val g2 = G2Continuity(
-    extendedFraction = 0.5,
-    arcFraction = 0.45,
-    bezierCurvatureScale = 1.10,
-    arcCurvatureScale = 1.10,
-    capsuleArcFraction = 0.45
+    config = G2ContinuityConfig.RoundedRectangle.copy(
+        extendedFraction = 0.5,
+        arcFraction = 1.0 / 3.0,
+        bezierCurvatureScale = 1.11,
+        arcCurvatureScale = 1.11
+    ),
+    capsuleConfig = CapsuleConfig.Capsule.copy(
+        extendedFraction = 1.0 / 3.0,
+        arcFraction = 0.0
+    )
 )
 
 // create shapes with custom continuity
@@ -74,8 +79,10 @@ The following code creates an exact (perfect) G2 continuity. However, it is not 
 because its curvature is not optimal.
 
 ```kotlin
-val exactG2 = G2Continuity(/* ... */).copy(
-    bezierCurvatureScale = 1.0,
-    arcCurvatureScale = 1.0
+val exactG2 = G2Continuity(
+    config = G2ContinuityConfig.RoundedRectangle.copy(
+        bezierCurvatureScale = 1.0,
+        arcCurvatureScale = 1.0
+    )
 )
 ```

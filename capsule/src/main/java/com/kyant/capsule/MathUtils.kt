@@ -1,5 +1,6 @@
 package com.kyant.capsule
 
-internal fun lerp(start: Double, stop: Double, fraction: Double): Double {
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun lerp(start: Double, stop: Double, fraction: Double): Double {
     return start + (stop - start) * fraction
 }

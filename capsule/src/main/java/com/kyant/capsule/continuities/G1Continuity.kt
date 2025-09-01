@@ -8,7 +8,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import com.kyant.capsule.Continuity
 import com.kyant.capsule.core.Point
-import com.kyant.capsule.lerp
 import com.kyant.capsule.path.PathSegments
 import com.kyant.capsule.path.buildPathSegments
 import kotlin.math.PI
@@ -88,11 +87,8 @@ data object G1Continuity : Continuity {
             is G1Continuity -> this
             is G2Continuity ->
                 G2Continuity(
-                    extendedFraction = lerp(0.0, stop.extendedFraction, fraction),
-                    arcFraction = lerp(1.0, stop.arcFraction, fraction),
-                    bezierCurvatureScale = lerp(1.0, stop.bezierCurvatureScale, fraction),
-                    arcCurvatureScale = lerp(1.0, stop.arcCurvatureScale, fraction),
-                    capsuleArcFraction = lerp(1.0, stop.capsuleArcFraction, fraction)
+                    config = lerp(G2ContinuityConfig.G1Equivalent, stop.config, fraction),
+                    capsuleConfig = lerp(G2ContinuityConfig.G1Equivalent, stop.capsuleConfig, fraction)
                 )
 
             else -> stop.lerp(this, 1f - fraction)

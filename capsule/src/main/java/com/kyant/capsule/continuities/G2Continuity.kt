@@ -1,12 +1,10 @@
 package com.kyant.capsule.continuities
 
-import androidx.annotation.FloatRange
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceIn
 import com.kyant.capsule.AdvancedContinuity
 import com.kyant.capsule.Continuity
-import com.kyant.capsule.core.CubicBezier
 import com.kyant.capsule.core.Point
 import com.kyant.capsule.lerp
 import com.kyant.capsule.path.PathSegments
@@ -16,57 +14,19 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.sqrt
 
 @Immutable
 data class G2Continuity(
-    @param:FloatRange(from = 0.0, fromInclusive = false) val extendedFraction: Double = 0.5,
-    @param:FloatRange(from = 0.0, to = 1.0) val arcFraction: Double = 0.45,
-    @param:FloatRange(from = 0.0) val bezierCurvatureScale: Double = 1.10,
-    @param:FloatRange(from = 0.0, fromInclusive = false) val arcCurvatureScale: Double = 1.10,
-    @param:FloatRange(from = 0.0, to = 1.0) val capsuleArcFraction: Double = arcFraction
+    val config: G2ContinuityConfig = G2ContinuityConfig.RoundedRectangle,
+    val capsuleConfig: G2ContinuityConfig = G2ContinuityConfig.Capsule
 ) : AdvancedContinuity() {
 
-    private val bezier = generateG2BaseBezier(
-        extendedFraction = extendedFraction,
-        arcFraction = arcFraction,
-        bezierCurvatureScale = bezierCurvatureScale,
-        arcCurvatureScale = arcCurvatureScale
-    )
-
-    private val capsuleBezier = generateG2BaseBezier(
-        extendedFraction = 0.0,
-        arcFraction = capsuleArcFraction,
-        bezierCurvatureScale = 1.0,
-        arcCurvatureScale = 1.0
-    )
-
-    private fun getBezier(
-        nonCapsuleRatio: Double,
-        arcFraction: Double,
-        bezierCurvatureScale: Double,
-        arcCurvatureScale: Double
-    ): CubicBezier {
-        if (nonCapsuleRatio == 0.0) {
-            return capsuleBezier
+    private fun resolveBezier(config: G2ContinuityConfig) =
+        when (config) {
+            this.config -> this.config.bezier
+            this.capsuleConfig -> this.config.bezier
+            else -> config.bezier
         }
-
-        val extendedFraction = this.extendedFraction * nonCapsuleRatio
-        if (this.extendedFraction == extendedFraction &&
-            this.arcFraction == arcFraction &&
-            this.bezierCurvatureScale == bezierCurvatureScale &&
-            this.arcCurvatureScale == arcCurvatureScale
-        ) {
-            return bezier
-        }
-
-        return generateG2BaseBezier(
-            extendedFraction = extendedFraction,
-            arcFraction = arcFraction,
-            bezierCurvatureScale = bezierCurvatureScale,
-            arcCurvatureScale = arcCurvatureScale
-        )
-    }
 
     override fun createStandardRoundedRectanglePathSegments(
         width: Double,
@@ -85,38 +45,14 @@ data class G2Continuity(
 
         // non-capsule ratios of each half corner
         // 0: full capsule, 1: safe rounded rectangle, (0, 1): progressive capsule
-        val ratioTLV = ((centerY / topLeft - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioTLH = ((centerX / topLeft - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioTRH = ((centerX / topRight - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioTRV = ((centerY / topRight - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioBRV = ((centerY / bottomRight - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioBRH = ((centerX / bottomRight - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioBLH = ((centerX / bottomLeft - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val ratioBLV = ((centerY / bottomLeft - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-
-        // Bezier stuffs
-
-        // offsets of each half corner
-        val offsetTLV = -topLeft * extendedFraction * ratioTLV
-        val offsetTLH = -topLeft * extendedFraction * ratioTLH
-        val offsetTRH = -topRight * extendedFraction * ratioTRH
-        val offsetTRV = -topRight * extendedFraction * ratioTRV
-        val offsetBRV = -bottomRight * extendedFraction * ratioBRV
-        val offsetBRH = -bottomRight * extendedFraction * ratioBRH
-        val offsetBLH = -bottomLeft * extendedFraction * ratioBLH
-        val offsetBLV = -bottomLeft * extendedFraction * ratioBLV
-
-        // Bezier curvature scales of each half corner
-        val bezKScaleTLV = 1.0 + (bezierCurvatureScale - 1.0) * ratioTLV
-        val bezKScaleTLH = 1.0 + (bezierCurvatureScale - 1.0) * ratioTLH
-        val bezKScaleTRH = 1.0 + (bezierCurvatureScale - 1.0) * ratioTRH
-        val bezKScaleTRV = 1.0 + (bezierCurvatureScale - 1.0) * ratioTRV
-        val bezKScaleBRV = 1.0 + (bezierCurvatureScale - 1.0) * ratioBRV
-        val bezKScaleBRH = 1.0 + (bezierCurvatureScale - 1.0) * ratioBRH
-        val bezKScaleBLH = 1.0 + (bezierCurvatureScale - 1.0) * ratioBLH
-        val bezKScaleBLV = 1.0 + (bezierCurvatureScale - 1.0) * ratioBLV
-
-        // arc stuffs
+        val ratioTLV = ((centerY / topLeft - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioTLH = ((centerX / topLeft - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioTRH = ((centerX / topRight - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioTRV = ((centerY / topRight - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioBRV = ((centerY / bottomRight - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioBRH = ((centerX / bottomRight - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioBLH = ((centerX / bottomLeft - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val ratioBLV = ((centerY / bottomLeft - 1.0) / config.extendedFraction).fastCoerceIn(0.0, 1.0)
 
         // constrained non-capsule ratios of each corner
         val ratioTL = min(ratioTLV, ratioTLH)
@@ -124,27 +60,67 @@ data class G2Continuity(
         val ratioBR = min(ratioBRV, ratioBRH)
         val ratioBL = min(ratioBLH, ratioBLV)
 
+        // Bezier stuffs
+
+        // extended fractions of each corner
+        val extFracTL = lerp(capsuleConfig.extendedFraction, config.extendedFraction, ratioTL)
+        val extFracTR = lerp(capsuleConfig.extendedFraction, config.extendedFraction, ratioTR)
+        val extFracBR = lerp(capsuleConfig.extendedFraction, config.extendedFraction, ratioBR)
+        val extFracBL = lerp(capsuleConfig.extendedFraction, config.extendedFraction, ratioBL)
+
+        // resolved extended fractions of each half corner
+        val extFracTLV = extFracTL * ratioTLV
+        val extFracTLH = extFracTL * ratioTLH
+        val extFracTRH = extFracTR * ratioTRH
+        val extFracTRV = extFracTR * ratioTRV
+        val extFracBRV = extFracBR * ratioBRV
+        val extFracBRH = extFracBR * ratioBRH
+        val extFracBLH = extFracBL * ratioBLH
+        val extFracBLV = extFracBL * ratioBLV
+
+        // offsets of each half corner
+        val offsetTLV = -topLeft * extFracTLV
+        val offsetTLH = -topLeft * extFracTLH
+        val offsetTRH = -topRight * extFracTRH
+        val offsetTRV = -topRight * extFracTRV
+        val offsetBRV = -bottomRight * extFracBRV
+        val offsetBRH = -bottomRight * extFracBRH
+        val offsetBLH = -bottomLeft * extFracBLH
+        val offsetBLV = -bottomLeft * extFracBLV
+
+        // Bezier curvature scales of each half corner
+        val bezKScaleTLV = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioTLV)
+        val bezKScaleTLH = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioTLH)
+        val bezKScaleTRH = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioTRH)
+        val bezKScaleTRV = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioTRV)
+        val bezKScaleBRV = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioBRV)
+        val bezKScaleBRH = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioBRH)
+        val bezKScaleBLH = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioBLH)
+        val bezKScaleBLV = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioBLV)
+
+        // arc stuffs
+
         // arc fractions of each corner
-        val arcFracTL = lerp(capsuleArcFraction, arcFraction, ratioTL)
-        val arcFracTR = lerp(capsuleArcFraction, arcFraction, ratioTR)
-        val arcFracBR = lerp(capsuleArcFraction, arcFraction, ratioBR)
-        val arcFracBL = lerp(capsuleArcFraction, arcFraction, ratioBL)
+        val arcFracTL = lerp(capsuleConfig.arcFraction, config.arcFraction, ratioTL)
+        val arcFracTR = lerp(capsuleConfig.arcFraction, config.arcFraction, ratioTR)
+        val arcFracBR = lerp(capsuleConfig.arcFraction, config.arcFraction, ratioBR)
+        val arcFracBL = lerp(capsuleConfig.arcFraction, config.arcFraction, ratioBL)
 
         // arc curvature scales of each corner
-        val arcKScaleTL = 1.0 + (arcCurvatureScale - 1.0) * ratioTL
-        val arcKScaleTR = 1.0 + (arcCurvatureScale - 1.0) * ratioTR
-        val arcKScaleBR = 1.0 + (arcCurvatureScale - 1.0) * ratioBR
-        val arcKScaleBL = 1.0 + (arcCurvatureScale - 1.0) * ratioBL
+        val arcKScaleTL = 1.0 + (config.arcCurvatureScale - 1.0) * ratioTL
+        val arcKScaleTR = 1.0 + (config.arcCurvatureScale - 1.0) * ratioTR
+        val arcKScaleBR = 1.0 + (config.arcCurvatureScale - 1.0) * ratioBR
+        val arcKScaleBL = 1.0 + (config.arcCurvatureScale - 1.0) * ratioBL
 
         // base Beziers of each half corner
-        val bezierTLV = getBezier(ratioTLV, arcFracTL, bezKScaleTLV, arcKScaleTL)
-        val bezierTLH = getBezier(ratioTLH, arcFracTL, bezKScaleTLH, arcKScaleTL)
-        val bezierTRH = getBezier(ratioTRH, arcFracTR, bezKScaleTRH, arcKScaleTR)
-        val bezierTRV = getBezier(ratioTRV, arcFracTR, bezKScaleTRV, arcKScaleTR)
-        val bezierBRV = getBezier(ratioBRV, arcFracBR, bezKScaleBRV, arcKScaleBR)
-        val bezierBRH = getBezier(ratioBRH, arcFracBR, bezKScaleBRH, arcKScaleBR)
-        val bezierBLH = getBezier(ratioBLH, arcFracBL, bezKScaleBLH, arcKScaleBL)
-        val bezierBLV = getBezier(ratioBLV, arcFracBL, bezKScaleBLV, arcKScaleBL)
+        val bezierTLV = resolveBezier(G2ContinuityConfig(extFracTLV, arcFracTL, bezKScaleTLV, arcKScaleTL))
+        val bezierTLH = resolveBezier(G2ContinuityConfig(extFracTLH, arcFracTL, bezKScaleTLH, arcKScaleTL))
+        val bezierTRH = resolveBezier(G2ContinuityConfig(extFracTRH, arcFracTR, bezKScaleTRH, arcKScaleTR))
+        val bezierTRV = resolveBezier(G2ContinuityConfig(extFracTRV, arcFracTR, bezKScaleTRV, arcKScaleTR))
+        val bezierBRV = resolveBezier(G2ContinuityConfig(extFracBRV, arcFracBR, bezKScaleBRV, arcKScaleBR))
+        val bezierBRH = resolveBezier(G2ContinuityConfig(extFracBRH, arcFracBR, bezKScaleBRH, arcKScaleBR))
+        val bezierBLH = resolveBezier(G2ContinuityConfig(extFracBLH, arcFracBL, bezKScaleBLH, arcKScaleBL))
+        val bezierBLV = resolveBezier(G2ContinuityConfig(extFracBLV, arcFracBL, bezKScaleBLV, arcKScaleBL))
 
         return buildPathSegments {
             var x = 0.0
@@ -303,17 +279,22 @@ data class G2Continuity(
         val radius = height * 0.5
         val centerX = width * 0.5
 
-        val ratioH = ((centerX / radius - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val offsetH = -radius * extendedFraction * ratioH
-        val bezKScaleH = 1.0 + (bezierCurvatureScale - 1.0) * ratioH
-        val arcFrac = capsuleArcFraction
+        val ratioH = ((centerX / radius - 1.0) / capsuleConfig.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val extFrac = capsuleConfig.extendedFraction
+        val extFracH = extFrac * ratioH
+        val offsetH = -radius * extFracH
+        val bezKScaleH = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioH)
+        val arcFrac = capsuleConfig.arcFraction
         val bezierH =
-            getBezier(
-                nonCapsuleRatio = ratioH,
-                arcFraction = arcFrac,
-                bezierCurvatureScale = bezKScaleH,
-                arcCurvatureScale = 1.0
+            resolveBezier(
+                G2ContinuityConfig(
+                    extendedFraction = extFracH,
+                    arcFraction = arcFrac,
+                    bezierCurvatureScale = bezKScaleH,
+                    arcCurvatureScale = 1.0
+                )
             ) * radius
+
         val arcRad = PI * 0.5 * arcFrac
         val bezRad = (PI * 0.5 - arcRad) * 0.5
         val sweepRad = (bezRad + arcRad) * 2.0
@@ -395,17 +376,22 @@ data class G2Continuity(
         val radius = width * 0.5
         val centerY = height * 0.5
 
-        val ratioV = ((centerY / radius - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
-        val offsetV = -radius * extendedFraction * ratioV
-        val bezKScaleV = 1.0 + (bezierCurvatureScale - 1.0) * ratioV
-        val arcFrac = capsuleArcFraction
+        val ratioV = ((centerY / radius - 1.0) / capsuleConfig.extendedFraction).fastCoerceIn(0.0, 1.0)
+        val extFrac = capsuleConfig.extendedFraction
+        val extFracV = extFrac * ratioV
+        val offsetV = -radius * extFracV
+        val bezKScaleV = lerp(capsuleConfig.bezierCurvatureScale, config.bezierCurvatureScale, ratioV)
+        val arcFrac = capsuleConfig.arcFraction
         val bezierV =
-            getBezier(
-                nonCapsuleRatio = ratioV,
-                arcFraction = arcFrac,
-                bezierCurvatureScale = bezKScaleV,
-                arcCurvatureScale = 1.0
+            resolveBezier(
+                G2ContinuityConfig(
+                    extendedFraction = extFracV,
+                    arcFraction = arcFrac,
+                    bezierCurvatureScale = bezKScaleV,
+                    arcCurvatureScale = 1.0
+                )
             ) * radius
+
         val arcRad = PI * 0.5 * arcFrac
         val bezRad = (PI * 0.5 - arcRad) * 0.5
         val sweepRad = (bezRad + arcRad) * 2.0
@@ -428,7 +414,7 @@ data class G2Continuity(
             arcTo(
                 center = Point(radius, radius),
                 radius = radius,
-                startAngle = -(PI * 0.5 + bezRad),
+                startAngle = -(PI - bezRad),
                 sweepAngle = sweepRad
             )
 
@@ -485,73 +471,12 @@ data class G2Continuity(
         return when (stop) {
             is G2Continuity ->
                 G2Continuity(
-                    extendedFraction = lerp(this.extendedFraction, stop.extendedFraction, fraction),
-                    arcFraction = lerp(this.arcFraction, stop.arcFraction, fraction),
-                    bezierCurvatureScale = lerp(this.bezierCurvatureScale, stop.bezierCurvatureScale, fraction),
-                    arcCurvatureScale = lerp(this.arcCurvatureScale, stop.arcCurvatureScale, fraction),
-                    capsuleArcFraction = lerp(this.capsuleArcFraction, stop.capsuleArcFraction, fraction)
+                    config = lerp(this.config, stop.config, fraction),
+                    capsuleConfig = lerp(this.capsuleConfig, stop.capsuleConfig, fraction)
                 )
 
             else -> stop.lerp(this, 1f - fraction)
         }
-    }
-}
-
-private fun generateG2BaseBezier(
-    extendedFraction: Double,
-    arcFraction: Double,
-    bezierCurvatureScale: Double,
-    arcCurvatureScale: Double
-): CubicBezier {
-    val arcRadians = PI * 0.5 * arcFraction
-    val bezierRadians = (PI * 0.5 - arcRadians) * 0.5
-    val sin = sin(bezierRadians)
-    val cos = cos(bezierRadians)
-
-    return if (bezierCurvatureScale == 1.0 && arcCurvatureScale == 1.0) {
-        val halfTan = sin / (1.0 + cos)
-        CubicBezier(
-            Point(-extendedFraction, 0.0),
-            Point((1.0 - 1.5 / (1.0 + cos)) * halfTan, 0.0),
-            Point(halfTan, 0.0),
-            Point(sin, 1.0 - cos)
-        )
-    } else {
-        val endTangent =
-            if (arcFraction > 0.0 && arcCurvatureScale > 0.0) {
-                getUnitTangentAtStartOfArc(
-                    from = Point(sin, 1.0 - cos),
-                    to = Point(
-                        sin(bezierRadians + arcRadians),
-                        1.0 - cos(bezierRadians + arcRadians)
-                    ),
-                    radius = 1.0 / arcCurvatureScale
-                )
-            } else {
-                Point(1.0 / sqrt(2.0), 1.0 / sqrt(2.0))
-            }
-
-        /* solved using G2 continuity conditions:
-            start = Point(-extendedFraction, 0.0)
-            end = Point(sin, 1.0 - cos)
-            startTangent = Point(1.0, 0.0)
-            endTangent = endTangent
-            startCurvature = 0.0
-            endCurvature = bezierCurvatureScale
-        */
-        val b1 = 1.5 * bezierCurvatureScale
-        val a2 = endTangent.y
-        val dx = sin - (-extendedFraction)
-        val dy = 1.0 - cos
-        val a3 = -dy
-        val b3 = dy * endTangent.x - dx * endTangent.y
-        val lambda0 = -b3 / a2 - b1 * a3 * a3 / a2 / a2 / a2
-        CubicBezier(
-            Point(-extendedFraction, 0.0),
-            Point(-extendedFraction + lambda0, 0.0),
-            Point(sin - dy * (endTangent.x / endTangent.y), 0.0),
-            Point(sin, 1.0 - cos)
-        )
     }
 }
 
@@ -588,18 +513,5 @@ private fun PathSegmentsBuilder.arcToWithScaledRadius(
         x = center.x + cos(angle) * radius,
         y = center.y + sin(angle) * radius,
         radius = radius * radiusScale
-    )
-}
-
-private fun getUnitTangentAtStartOfArc(from: Point, to: Point, radius: Double): Point {
-    val mid = (from + to) * 0.5
-    val dir = to - from
-    val len = sqrt(dir.x * dir.x + dir.y * dir.y)
-    val height = sqrt(radius * radius - (len * 0.5) * (len * 0.5))
-    val norm = Point(-dir.y / len, dir.x / len)
-    val center = mid + norm * height * if (radius > 0) 1.0 else -1.0
-    return Point(
-        -(from.y - center.y) / radius,
-        (from.x - center.x) / radius
     )
 }

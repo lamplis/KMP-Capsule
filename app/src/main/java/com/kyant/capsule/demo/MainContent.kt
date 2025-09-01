@@ -40,11 +40,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastCoerceAtLeast
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.continuities.G2Continuity
+import com.kyant.capsule.continuities.G2ContinuityConfig
 import com.kyant.capsule.path.toPath
 
 @Composable
@@ -54,38 +54,51 @@ fun MainContent() {
             .safeDrawingPadding()
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        val maxRadius = with(LocalDensity.current) {
-            LocalWindowInfo.current.containerSize.width.toDp() / 2f - 16.dp
-        }
-
         var showBaseline by remember { mutableStateOf(false) }
-        var showCurvatureComb by remember { mutableStateOf(true) }
-
-        val radiusDp = remember { mutableFloatStateOf(40f) }
+        var showCurvatureComb by remember { mutableStateOf(false) }
 
         val defaultContinuity = remember { G2Continuity() }
-        val extendedFraction = remember { mutableFloatStateOf(defaultContinuity.extendedFraction.toFloat()) }
-        val arcFraction = remember { mutableFloatStateOf(defaultContinuity.arcFraction.toFloat()) }
-        val bezierCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.bezierCurvatureScale.toFloat()) }
-        val arcCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.arcCurvatureScale.toFloat()) }
-        val capsuleArcFraction = remember { mutableFloatStateOf(defaultContinuity.capsuleArcFraction.toFloat()) }
+
+        val extendedFraction =
+            remember { mutableFloatStateOf(defaultContinuity.config.extendedFraction.toFloat()) }
+        val arcFraction =
+            remember { mutableFloatStateOf(defaultContinuity.config.arcFraction.toFloat()) }
+        val bezierCurvatureScale =
+            remember { mutableFloatStateOf(defaultContinuity.config.bezierCurvatureScale.toFloat()) }
+        val arcCurvatureScale =
+            remember { mutableFloatStateOf(defaultContinuity.config.arcCurvatureScale.toFloat()) }
+
+        val capsuleExtendedFraction =
+            remember { mutableFloatStateOf(defaultContinuity.capsuleConfig.extendedFraction.toFloat()) }
+        val capsuleArcFraction =
+            remember { mutableFloatStateOf(defaultContinuity.capsuleConfig.arcFraction.toFloat()) }
+
         val currentContinuity by remember {
             derivedStateOf {
                 G2Continuity(
-                    extendedFraction = extendedFraction.floatValue.toDouble(),
-                    arcFraction = arcFraction.floatValue.toDouble(),
-                    bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
-                    arcCurvatureScale = arcCurvatureScale.floatValue.toDouble(),
-                    capsuleArcFraction = capsuleArcFraction.floatValue.toDouble()
+                    config = G2ContinuityConfig.RoundedRectangle.copy(
+                        extendedFraction = extendedFraction.floatValue.toDouble(),
+                        arcFraction = arcFraction.floatValue.toDouble(),
+                        bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
+                        arcCurvatureScale = arcCurvatureScale.floatValue.toDouble()
+                    ),
+                    capsuleConfig = G2ContinuityConfig.Capsule.copy(
+                        extendedFraction = capsuleExtendedFraction.floatValue.toDouble(),
+                        arcFraction = capsuleArcFraction.floatValue.toDouble()
+                    )
                 )
             }
         }
 
+        val maxRadius = with(LocalDensity.current) {
+            LocalWindowInfo.current.containerSize.width.toDp() / 2f - 16.dp
+        }
+        val radiusDp = remember { mutableFloatStateOf(48f) }
+        var invertedAspectRatio by remember { mutableStateOf(false) }
         val aspectRatio = remember { mutableFloatStateOf(1.618f) }
-
-        var scale by remember { mutableFloatStateOf(1f) }
+        var scale by remember { mutableFloatStateOf(0.75f) }
         var offset by remember { mutableStateOf(Offset.Zero) }
 
         var isSvgExportDialogVisible by remember { mutableStateOf(false) }
@@ -108,7 +121,7 @@ fun MainContent() {
                     .padding(16.dp)
                     .pointerInput(Unit) {
                         detectTransformGestures { centroid, pan, zoom, rotation ->
-                            scale = (scale * zoom).fastCoerceAtLeast(1f)
+                            scale = scale * zoom
                             offset += pan
                         }
                     }
@@ -159,8 +172,15 @@ fun MainContent() {
                         )
                     }
                     .layout { measurable, constraints ->
-                        val width = constraints.maxWidth
-                        val height = (width / aspectRatio.floatValue).fastRoundToInt()
+                        val width: Int
+                        val height: Int
+                        if (!invertedAspectRatio) {
+                            width = constraints.maxWidth
+                            height = (width / aspectRatio.floatValue).fastRoundToInt()
+                        } else {
+                            height = constraints.maxHeight
+                            width = (height / aspectRatio.floatValue).fastRoundToInt()
+                        }
                         val placeable = measurable.measure(Constraints.fixed(width, height))
 
                         layout(width, height) {
@@ -210,65 +230,13 @@ fun MainContent() {
                         else "Show curvature comb"
                     )
                 }
-            }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Slider(
-                    aspectRatio,
-                    1f..2f,
-                    "Aspect ratio",
-                    { "%.3f".format(it) },
-                )
-                Slider(
-                    radiusDp,
-                    0f..maxRadius.value,
-                    "Corner radius",
-                    { "${"%.0f".format(it)}dp" },
-                )
-                Slider(
-                    extendedFraction,
-                    0f..2f,
-                    "Extended fraction",
-                    { "%.1f".format(it * 100f) + "%" },
-                )
-                Slider(
-                    arcFraction,
-                    0f..1f,
-                    "Arc fraction",
-                    { "%.1f".format(it * 100f) + "%" },
-                )
-                Slider(
-                    bezierCurvatureScale,
-                    0f..3f,
-                    "Bezier curvature scale",
-                    { "%.2f".format(it) },
-                )
-                Slider(
-                    arcCurvatureScale,
-                    0f..3f,
-                    "Arc curvature scale",
-                    { "%.2f".format(it) },
-                )
-                Slider(
-                    capsuleArcFraction,
-                    0f..1f,
-                    "Capsule arc fraction",
-                    { "%.1f".format(it * 100f) + "%" },
-                )
-            }
-
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
                         .background(Color(0xFF90CAF9))
                         .clickable {
-                            scale = 1f
+                            scale = 0.75f
                             offset = Offset.Zero
                             aspectRatio.floatValue = 1.618f
                         }
@@ -276,7 +244,7 @@ fun MainContent() {
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Reset scale & pos")
+                    BasicText("Reset scale and position")
                 }
 
                 Box(
@@ -284,12 +252,19 @@ fun MainContent() {
                         .clip(ContinuousCapsule)
                         .background(Color(0xFF90CAF9))
                         .clickable {
-                            radiusDp.floatValue = 40f
-                            extendedFraction.floatValue = defaultContinuity.extendedFraction.toFloat()
-                            arcFraction.floatValue = defaultContinuity.arcFraction.toFloat()
-                            bezierCurvatureScale.floatValue = defaultContinuity.bezierCurvatureScale.toFloat()
-                            arcCurvatureScale.floatValue = defaultContinuity.arcCurvatureScale.toFloat()
-                            capsuleArcFraction.floatValue = defaultContinuity.capsuleArcFraction.toFloat()
+                            radiusDp.floatValue = 48f
+
+                            with(defaultContinuity.config) {
+                                extendedFraction.floatValue = this.extendedFraction.toFloat()
+                                arcFraction.floatValue = this.arcFraction.toFloat()
+                                bezierCurvatureScale.floatValue = this.bezierCurvatureScale.toFloat()
+                                arcCurvatureScale.floatValue = this.arcCurvatureScale.toFloat()
+                            }
+
+                            with(defaultContinuity.capsuleConfig) {
+                                capsuleExtendedFraction.floatValue = this.extendedFraction.toFloat()
+                                capsuleArcFraction.floatValue = this.arcFraction.toFloat()
+                            }
                         }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
@@ -316,6 +291,89 @@ fun MainContent() {
                         continuity = { currentContinuity }
                     )
                 }
+            }
+
+            BasicText(
+                "Shape",
+                Modifier.padding(horizontal = 8.dp)
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Slider(
+                    radiusDp,
+                    0f..maxRadius.value,
+                    "Corner radius",
+                    { "${"%.0f".format(it)}dp" },
+                )
+                Slider(
+                    aspectRatio,
+                    1f..3f,
+                    "Aspect ratio",
+                    { "%.3f".format(it) },
+                )
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable { invertedAspectRatio = !invertedAspectRatio }
+                        .height(40.dp)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText(
+                        if (invertedAspectRatio) "Inverted aspect ratio"
+                        else "Invert aspect ratio"
+                    )
+                }
+            }
+
+            BasicText(
+                "Rounded rectangle G2 config",
+                Modifier.padding(horizontal = 8.dp)
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Slider(
+                    extendedFraction,
+                    0f..2f,
+                    "Extended fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+                Slider(
+                    arcFraction,
+                    0f..1f,
+                    "Arc fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+                Slider(
+                    bezierCurvatureScale,
+                    0f..3f,
+                    "Bezier curvature scale",
+                    { "%.2f".format(it) },
+                )
+                Slider(
+                    arcCurvatureScale,
+                    0f..3f,
+                    "Arc curvature scale",
+                    { "%.2f".format(it) },
+                )
+            }
+
+            BasicText(
+                "Capsule G2 config",
+                Modifier.padding(horizontal = 8.dp)
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Slider(
+                    capsuleExtendedFraction,
+                    0f..2f,
+                    "Extended fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
+                Slider(
+                    capsuleArcFraction,
+                    0f..1f,
+                    "Arc fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
             }
         }
     }
