@@ -215,26 +215,6 @@ fun SvgExportDialog(
                         .clip(ContinuousCapsule)
                         .background(Color(0xFF90CAF9))
                         .clickable {
-                            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                addCategory(Intent.CATEGORY_OPENABLE)
-                                type = "image/svg+xml"
-                                putExtra(Intent.EXTRA_TITLE, "continuous_rounded_rect.svg")
-                            }
-                            createFileLauncher.launch(intent)
-                        }
-                        .height(48.dp)
-                        .weight(1f)
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    BasicText("Save")
-                }
-
-                Box(
-                    Modifier
-                        .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
-                        .clickable {
                             val svg = currentPathSegments.toSvg(asDocument = true)
                             val tempFile = File(context.cacheDir, "continuous_rounded_rect.svg").apply {
                                 writeBytes(svg.toByteArray())
@@ -257,6 +237,26 @@ fun SvgExportDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     BasicText("Share")
+                }
+
+                Box(
+                    Modifier
+                        .clip(ContinuousCapsule)
+                        .background(Color(0xFF90CAF9))
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                addCategory(Intent.CATEGORY_OPENABLE)
+                                type = "image/svg+xml"
+                                putExtra(Intent.EXTRA_TITLE, "continuous_rounded_rect.svg")
+                            }
+                            createFileLauncher.launch(intent)
+                        }
+                        .height(48.dp)
+                        .weight(1f)
+                        .padding(horizontal = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    BasicText("Save")
                 }
             }
         }

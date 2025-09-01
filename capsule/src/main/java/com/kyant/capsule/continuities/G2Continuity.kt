@@ -136,7 +136,7 @@ data class G2Continuity(
         val arcKScaleBR = 1.0 + (arcCurvatureScale - 1.0) * ratioBR
         val arcKScaleBL = 1.0 + (arcCurvatureScale - 1.0) * ratioBL
 
-        // Beziers of each half corner
+        // base Beziers of each half corner
         val bezierTLV = getBezier(ratioTLV, arcFracTL, bezKScaleTLV, arcKScaleTL)
         val bezierTLH = getBezier(ratioTLH, arcFracTL, bezKScaleTLH, arcKScaleTL)
         val bezierTRH = getBezier(ratioTRH, arcFracTR, bezKScaleTRH, arcKScaleTR)
@@ -293,6 +293,191 @@ data class G2Continuity(
                     )
                 }
             }
+
+            // LI
+            close()
+        }
+    }
+
+    override fun createHorizontalCapsulePathSegments(width: Double, height: Double): PathSegments {
+        val radius = height * 0.5
+        val centerX = width * 0.5
+
+        val ratioH = ((centerX / radius - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
+        val offsetH = -radius * extendedFraction * ratioH
+        val bezKScaleH = 1.0 + (bezierCurvatureScale - 1.0) * ratioH
+        val arcFrac = capsuleArcFraction
+        val bezierH =
+            getBezier(
+                nonCapsuleRatio = ratioH,
+                arcFraction = arcFrac,
+                bezierCurvatureScale = bezKScaleH,
+                arcCurvatureScale = 1.0
+            ) * radius
+        val arcRad = PI * 0.5 * arcFrac
+        val bezRad = (PI * 0.5 - arcRad) * 0.5
+        val sweepRad = (bezRad + arcRad) * 2.0
+
+        return buildPathSegments {
+            var x = 0.0
+            var y = radius
+            moveTo(x, y)
+
+            // LC
+            arcTo(
+                center = Point(radius, radius),
+                radius = radius,
+                startAngle = PI * 0.5 + bezRad,
+                sweepAngle = sweepRad
+            )
+
+            // TLH
+            x = radius
+            y = 0.0
+            with(bezierH) {
+                cubicTo(
+                    x - p2.x, y + p2.y,
+                    x - p1.x, y + p1.y,
+                    x - p0.x.fastCoerceAtLeast(offsetH), y + p0.y
+                )
+            }
+
+            // TI
+            x = width - radius
+            y = 0.0
+            lineTo(x + offsetH, y)
+
+            // TRH
+            with(bezierH) {
+                cubicTo(
+                    x + p1.x, y + p1.y,
+                    x + p2.x, y + p2.y,
+                    x + p3.x, y + p3.y
+                )
+            }
+
+            // RC
+            arcTo(
+                center = Point(width - radius, radius),
+                radius = radius,
+                startAngle = -(PI * 0.5 - bezRad),
+                sweepAngle = sweepRad
+            )
+
+            // BRH
+            x = width - radius
+            y = height
+            with(bezierH) {
+                cubicTo(
+                    x + p2.x, y - p2.y,
+                    x + p1.x, y - p1.y,
+                    x + p0.x.fastCoerceAtLeast(offsetH), y - p0.y
+                )
+            }
+
+            // BI
+            x = radius
+            y = height
+            lineTo(x - offsetH, y)
+
+            // BLH
+            with(bezierH) {
+                cubicTo(
+                    x - p1.x, y - p1.y,
+                    x - p2.x, y - p2.y,
+                    x - p3.x, y - p3.y
+                )
+            }
+        }
+    }
+
+    override fun createVerticalCapsulePathSegments(width: Double, height: Double): PathSegments {
+        val radius = width * 0.5
+        val centerY = height * 0.5
+
+        val ratioV = ((centerY / radius - 1.0) / extendedFraction).fastCoerceIn(0.0, 1.0)
+        val offsetV = -radius * extendedFraction * ratioV
+        val bezKScaleV = 1.0 + (bezierCurvatureScale - 1.0) * ratioV
+        val arcFrac = capsuleArcFraction
+        val bezierV =
+            getBezier(
+                nonCapsuleRatio = ratioV,
+                arcFraction = arcFrac,
+                bezierCurvatureScale = bezKScaleV,
+                arcCurvatureScale = 1.0
+            ) * radius
+        val arcRad = PI * 0.5 * arcFrac
+        val bezRad = (PI * 0.5 - arcRad) * 0.5
+        val sweepRad = (bezRad + arcRad) * 2.0
+
+        return buildPathSegments {
+            var x = 0.0
+            var y = radius
+            moveTo(x, y - offsetV)
+
+            // TLV
+            with(bezierV) {
+                cubicTo(
+                    x + p1.y, y - p1.x,
+                    x + p2.y, y - p2.x,
+                    x + p3.y, y - p3.x
+                )
+            }
+
+            // TC
+            arcTo(
+                center = Point(radius, radius),
+                radius = radius,
+                startAngle = -(PI * 0.5 + bezRad),
+                sweepAngle = sweepRad
+            )
+
+            // TRV
+            x = width
+            y = radius
+            with(bezierV) {
+                cubicTo(
+                    x - p2.y, y - p2.x,
+                    x - p1.y, y - p1.x,
+                    x - p0.y, y - p0.x.fastCoerceAtLeast(offsetV)
+                )
+            }
+
+            // RI
+            x = width
+            y = height - radius
+            lineTo(x, y + offsetV)
+
+            // BRV
+            with(bezierV) {
+                cubicTo(
+                    x - p1.y, y + p1.x,
+                    x - p2.y, y + p2.x,
+                    x - p3.y, y + p3.x
+                )
+            }
+
+            // BC
+            arcTo(
+                center = Point(width - radius, height - radius),
+                radius = radius,
+                startAngle = bezRad + arcRad,
+                sweepAngle = sweepRad
+            )
+
+            // BLV
+            x = 0.0
+            y = height - radius
+            with(bezierV) {
+                cubicTo(
+                    x + p2.y, y + p2.x,
+                    x + p1.y, y + p1.x,
+                    x + p0.y, y + p0.x.fastCoerceAtLeast(offsetV)
+                )
+            }
+
+            // LI
+            close()
         }
     }
 
@@ -380,6 +565,7 @@ private fun PathSegmentsBuilder.arcToWithScaledRadius(
     if (radius == 0.0 || sweepAngle == 0.0) {
         return
     }
+
     if (radiusScale.isInfinite()) {
         val angle = startAngle + sweepAngle
         return lineTo(
@@ -387,21 +573,22 @@ private fun PathSegmentsBuilder.arcToWithScaledRadius(
             center.y + sin(angle) * radius
         )
     }
-    return if (radiusScale == 1.0) {
-        arcTo(
+
+    if (radiusScale == 1.0) {
+        return arcTo(
             center = center,
             radius = radius,
             startAngle = startAngle,
             sweepAngle = sweepAngle
         )
-    } else {
-        val angle = startAngle + sweepAngle
-        arcTo(
-            x = center.x + cos(angle) * radius,
-            y = center.y + sin(angle) * radius,
-            radius = radius * radiusScale
-        )
     }
+
+    val angle = startAngle + sweepAngle
+    return arcTo(
+        x = center.x + cos(angle) * radius,
+        y = center.y + sin(angle) * radius,
+        radius = radius * radiusScale
+    )
 }
 
 private fun getUnitTangentAtStartOfArc(from: Point, to: Point, radius: Double): Point {

@@ -7,9 +7,8 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import com.kyant.capsule.core.Point
 import com.kyant.capsule.path.PathSegments
-import com.kyant.capsule.path.buildPathSegments
+import com.kyant.capsule.path.buildCirclePathSegments
 import com.kyant.capsule.path.toPath
-import kotlin.math.PI
 
 @Immutable
 abstract class AdvancedContinuity : Continuity {
@@ -90,15 +89,10 @@ abstract class AdvancedContinuity : Continuity {
 
     protected open fun createCirclePathSegments(size: Double): PathSegments {
         val radius = size * 0.5
-        return buildPathSegments {
-            moveTo(size, radius)
-            arcTo(
-                center = Point(radius, radius),
-                radius = radius,
-                startAngle = 0.0,
-                sweepAngle = PI * 2.0
-            )
-        }
+        return buildCirclePathSegments(
+            center = Point(radius, radius),
+            radius = radius
+        )
     }
 
     protected open fun createCircleOutline(size: Float): Outline {
@@ -121,7 +115,9 @@ abstract class AdvancedContinuity : Continuity {
         bottomLeft: Double
     ): PathSegments {
         // capsule
-        if (topLeft == width * 0.5 && topLeft == topRight && bottomLeft == bottomRight) {
+        if ((topLeft + topRight == width || topLeft + bottomLeft == height) &&
+            (topLeft == topRight && bottomRight == bottomLeft && topLeft == bottomRight)
+        ) {
             return createCapsulePathSegments(width, height)
         }
 

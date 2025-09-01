@@ -40,6 +40,13 @@ fun PathSegments.toSvg(asDocument: Boolean = false): String = buildString {
                     "A${segment.radius} ${segment.radius} 0 $largeArcFlag $sweepFlag ${segment.to.x} ${segment.to.y}"
                 }
 
+                is PathSegment.Circle -> {
+                    val cx = segment.center.x
+                    val cy = segment.center.y
+                    val r = segment.radius
+                    "M${cx + r} $cy A$r $r 0 1 0 ${cx - r} $cy A$r $r 0 1 0 ${cx + r} $cy Z"
+                }
+
                 is PathSegment.Cubic -> "C${segment.p1.x} ${segment.p1.y}, ${segment.p2.x} ${segment.p2.y}, ${segment.p3.x} ${segment.p3.y}"
             }
             append(string)

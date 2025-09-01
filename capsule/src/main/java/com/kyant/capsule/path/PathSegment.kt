@@ -3,10 +3,9 @@ package com.kyant.capsule.path
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.asAndroidPath
 import com.kyant.capsule.core.Point
 import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -93,6 +92,44 @@ sealed interface PathSegment {
         }
     }
 
+    data class Circle(
+        val center: Point,
+        val radius: Double
+    ) : PathSegment {
+
+        override val from: Point
+            get() = Point(center.x + radius, center.y)
+
+        override val to: Point
+            get() = from
+
+        override fun pointAt(t: Double): Point {
+            val angle = 2.0 * PI * t
+            return Point(
+                center.x + cos(angle) * radius,
+                center.y + sin(angle) * radius
+            )
+        }
+
+        override fun unitTangentAt(t: Double): Point {
+            val angle = 2.0 * PI * t
+            return Point(-sin(angle), cos(angle))
+        }
+
+        override fun curvatureAt(t: Double): Double {
+            return 1.0 / radius
+        }
+
+        override fun drawTo(path: Path) {
+            path.asAndroidPath().addCircle(
+                center.x.toFloat(),
+                center.y.toFloat(),
+                radius.toFloat(),
+                android.graphics.Path.Direction.CW
+            )
+        }
+    }
+
     data class Cubic(
         val p0: Point,
         val p1: Point,
@@ -134,39 +171,6 @@ sealed interface PathSegment {
                 p1.x.toFloat(), p1.y.toFloat(),
                 p2.x.toFloat(), p2.y.toFloat(),
                 p3.x.toFloat(), p3.y.toFloat()
-            )
-        }
-    }
-
-    companion object {
-
-        @Suppress("FunctionName")
-        fun Arc(
-            from: Point,
-            to: Point,
-            radius: Double
-        ): PathSegment {
-            val mid = (from + to) * 0.5
-            val dir = to - from
-            val len = sqrt(dir.x * dir.x + dir.y * dir.y)
-            val height = sqrt(radius * radius - (len * 0.5) * (len * 0.5))
-            val norm = Point(-dir.y / len, dir.x / len)
-            val center = mid + norm * height * if (radius > 0) 1.0 else -1.0
-            val startAngle = atan2(from.y - center.y, from.x - center.x)
-            val endAngle = atan2(to.y - center.y, to.x - center.x)
-            val sweepAngle = when {
-                radius > 0 && endAngle >= startAngle -> endAngle - startAngle
-                radius > 0 && endAngle < startAngle -> endAngle + 2.0 * PI - startAngle
-                radius < 0 && endAngle <= startAngle -> endAngle - startAngle
-                radius < 0 && endAngle > startAngle -> endAngle - 2.0 * PI - startAngle
-                else -> 0.0
-            }
-
-            return Arc(
-                center = center,
-                radius = abs(radius),
-                startAngle = startAngle,
-                sweepAngle = sweepAngle
             )
         }
     }
