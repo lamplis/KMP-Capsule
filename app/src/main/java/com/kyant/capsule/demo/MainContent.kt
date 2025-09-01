@@ -63,19 +63,22 @@ fun MainContent() {
         var showBaseline by remember { mutableStateOf(false) }
         var showCurvatureComb by remember { mutableStateOf(true) }
 
-        val defaultContinuity = remember { G2Continuity() }
         val radiusDp = remember { mutableFloatStateOf(40f) }
+
+        val defaultContinuity = remember { G2Continuity() }
         val extendedFraction = remember { mutableFloatStateOf(defaultContinuity.extendedFraction.toFloat()) }
         val arcFraction = remember { mutableFloatStateOf(defaultContinuity.arcFraction.toFloat()) }
         val bezierCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.bezierCurvatureScale.toFloat()) }
         val arcCurvatureScale = remember { mutableFloatStateOf(defaultContinuity.arcCurvatureScale.toFloat()) }
+        val capsuleArcFraction = remember { mutableFloatStateOf(defaultContinuity.capsuleArcFraction.toFloat()) }
         val currentContinuity by remember {
             derivedStateOf {
                 G2Continuity(
                     extendedFraction = extendedFraction.floatValue.toDouble(),
                     arcFraction = arcFraction.floatValue.toDouble(),
                     bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
-                    arcCurvatureScale = arcCurvatureScale.floatValue.toDouble()
+                    arcCurvatureScale = arcCurvatureScale.floatValue.toDouble(),
+                    capsuleArcFraction = capsuleArcFraction.floatValue.toDouble()
                 )
             }
         }
@@ -248,6 +251,12 @@ fun MainContent() {
                     "Arc curvature scale",
                     { "%.2f".format(it) },
                 )
+                Slider(
+                    capsuleArcFraction,
+                    0f..1f,
+                    "Capsule arc fraction",
+                    { "%.1f".format(it * 100f) + "%" },
+                )
             }
 
             FlowRow(
@@ -280,6 +289,7 @@ fun MainContent() {
                             arcFraction.floatValue = defaultContinuity.arcFraction.toFloat()
                             bezierCurvatureScale.floatValue = defaultContinuity.bezierCurvatureScale.toFloat()
                             arcCurvatureScale.floatValue = defaultContinuity.arcCurvatureScale.toFloat()
+                            capsuleArcFraction.floatValue = defaultContinuity.capsuleArcFraction.toFloat()
                         }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),

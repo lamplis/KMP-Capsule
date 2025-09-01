@@ -49,7 +49,7 @@ val g2 = G2Continuity(
     arcFraction = 0.45,
     bezierCurvatureScale = 1.10,
     arcCurvatureScale = 1.10,
-    fixedCircleFractionForCapsule = false
+    capsuleArcFraction = 0.45
 )
 
 // create shapes with custom continuity

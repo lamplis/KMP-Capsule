@@ -94,7 +94,7 @@ data object G1Continuity : Continuity {
                     arcFraction = lerp(1.0, stop.arcFraction, fraction),
                     bezierCurvatureScale = lerp(1.0, stop.bezierCurvatureScale, fraction),
                     arcCurvatureScale = lerp(1.0, stop.arcCurvatureScale, fraction),
-                    fixedCircleFractionForCapsule = stop.fixedCircleFractionForCapsule
+                    capsuleArcFraction = lerp(1.0, stop.capsuleArcFraction, fraction)
                 )
 
             else -> stop.lerp(this, 1f - fraction)

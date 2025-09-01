@@ -23,7 +23,7 @@ data class G2Continuity(
     @param:FloatRange(from = 0.0, to = 1.0) val arcFraction: Double = 0.45,
     @param:FloatRange(from = 0.0) val bezierCurvatureScale: Double = 1.10,
     @param:FloatRange(from = 0.0, fromInclusive = false) val arcCurvatureScale: Double = 1.10,
-    val fixedCircleFractionForCapsule: Boolean = false
+    @param:FloatRange(from = 0.0, to = 1.0) val capsuleArcFraction: Double = arcFraction
 ) : Continuity {
 
     override val isValid: Boolean
@@ -41,7 +41,7 @@ data class G2Continuity(
 
     private val capsuleBezier = generateG2BaseBezier(
         extendedFraction = 0.0,
-        arcFraction = if (fixedCircleFractionForCapsule) arcFraction else 0.0,
+        arcFraction = capsuleArcFraction,
         bezierCurvatureScale = 1.0,
         arcCurvatureScale = 1.0
     )
@@ -123,17 +123,17 @@ data class G2Continuity(
 
         // arc stuffs
 
-        // constrained ratios of each corner
+        // constrained non-capsule ratios of each corner
         val ratioTL = min(ratioTLV, ratioTLH)
         val ratioTR = min(ratioTRH, ratioTRV)
         val ratioBR = min(ratioBRV, ratioBRH)
         val ratioBL = min(ratioBLH, ratioBLV)
 
         // arc fractions of each corner
-        val arcFracTL = if (fixedCircleFractionForCapsule) arcFraction else arcFraction * ratioTL
-        val arcFracTR = if (fixedCircleFractionForCapsule) arcFraction else arcFraction * ratioTR
-        val arcFracBR = if (fixedCircleFractionForCapsule) arcFraction else arcFraction * ratioBR
-        val arcFracBL = if (fixedCircleFractionForCapsule) arcFraction else arcFraction * ratioBL
+        val arcFracTL = lerp(capsuleArcFraction, arcFraction, ratioTL)
+        val arcFracTR = lerp(capsuleArcFraction, arcFraction, ratioTR)
+        val arcFracBR = lerp(capsuleArcFraction, arcFraction, ratioBR)
+        val arcFracBL = lerp(capsuleArcFraction, arcFraction, ratioBL)
 
         // arc curvature scales of each corner
         val arcKScaleTL = 1.0 + (arcCurvatureScale - 1.0) * ratioTL
@@ -168,12 +168,12 @@ data class G2Continuity(
                 }
 
                 // TLC
-                arcToRadWithScaledRadius(
+                arcToWithScaledRadius(
                     center = Point(topLeft, topLeft),
                     radius = topLeft,
                     radiusScale = 1.0 / arcKScaleTL,
-                    startAngleRadians = PI + PI * 0.5 * (1.0 - arcFracTL) * 0.5,
-                    sweepAngleRadians = PI * 0.5 * arcFracTL
+                    startAngle = PI + PI * 0.5 * (1.0 - arcFracTL) * 0.5,
+                    sweepAngle = PI * 0.5 * arcFracTL
                 )
 
                 // TLH
@@ -205,12 +205,12 @@ data class G2Continuity(
                 }
 
                 // TRC
-                arcToRadWithScaledRadius(
+                arcToWithScaledRadius(
                     center = Point(width - topRight, topRight),
                     radius = topRight,
                     radiusScale = 1.0 / arcKScaleTR,
-                    startAngleRadians = -PI * 0.5 + PI * 0.5 * (1.0 - arcFracBL) * 0.5,
-                    sweepAngleRadians = PI * 0.5 * arcFracTR
+                    startAngle = -PI * 0.5 + PI * 0.5 * (1.0 - arcFracBL) * 0.5,
+                    sweepAngle = PI * 0.5 * arcFracTR
                 )
 
                 // TRV
@@ -242,12 +242,12 @@ data class G2Continuity(
                 }
 
                 // BRC
-                arcToRadWithScaledRadius(
+                arcToWithScaledRadius(
                     center = Point(width - bottomRight, height - bottomRight),
                     radius = bottomRight,
                     radiusScale = 1.0 / arcKScaleBR,
-                    startAngleRadians = 0.0 + PI * 0.5 * (1.0 - arcFracBR) * 0.5,
-                    sweepAngleRadians = PI * 0.5 * arcFracBR
+                    startAngle = 0.0 + PI * 0.5 * (1.0 - arcFracBR) * 0.5,
+                    sweepAngle = PI * 0.5 * arcFracBR
                 )
 
                 // BRH
@@ -279,12 +279,12 @@ data class G2Continuity(
                 }
 
                 // BLC
-                arcToRadWithScaledRadius(
+                arcToWithScaledRadius(
                     center = Point(bottomLeft, height - bottomLeft),
                     radius = bottomLeft,
                     radiusScale = 1.0 / arcKScaleBL,
-                    startAngleRadians = PI * 0.5 + PI * 0.5 * (1.0 - arcFracBL) * 0.5,
-                    sweepAngleRadians = PI * 0.5 * arcFracBL
+                    startAngle = PI * 0.5 + PI * 0.5 * (1.0 - arcFracBL) * 0.5,
+                    sweepAngle = PI * 0.5 * arcFracBL
                 )
 
                 // BLV
@@ -309,8 +309,7 @@ data class G2Continuity(
                     arcFraction = lerp(this.arcFraction, stop.arcFraction, fraction),
                     bezierCurvatureScale = lerp(this.bezierCurvatureScale, stop.bezierCurvatureScale, fraction),
                     arcCurvatureScale = lerp(this.arcCurvatureScale, stop.arcCurvatureScale, fraction),
-                    fixedCircleFractionForCapsule =
-                        if (fraction < 0.5) this.fixedCircleFractionForCapsule else stop.fixedCircleFractionForCapsule
+                    capsuleArcFraction = lerp(this.capsuleArcFraction, stop.capsuleArcFraction, fraction)
                 )
 
             else -> stop.lerp(this, 1f - fraction)
@@ -376,18 +375,18 @@ private fun generateG2BaseBezier(
     }
 }
 
-private fun PathSegmentsBuilder.arcToRadWithScaledRadius(
+private fun PathSegmentsBuilder.arcToWithScaledRadius(
     center: Point,
     radius: Double,
     radiusScale: Double,
-    startAngleRadians: Double,
-    sweepAngleRadians: Double
+    startAngle: Double,
+    sweepAngle: Double
 ) {
-    if (radius == 0.0 || sweepAngleRadians == 0.0) {
+    if (radius == 0.0 || sweepAngle == 0.0) {
         return
     }
     if (radiusScale.isInfinite()) {
-        val angle = startAngleRadians + sweepAngleRadians
+        val angle = startAngle + sweepAngle
         return lineTo(
             center.x + cos(angle) * radius,
             center.y + sin(angle) * radius
@@ -397,11 +396,11 @@ private fun PathSegmentsBuilder.arcToRadWithScaledRadius(
         arcTo(
             center = center,
             radius = radius,
-            startAngle = startAngleRadians,
-            sweepAngle = sweepAngleRadians
+            startAngle = startAngle,
+            sweepAngle = sweepAngle
         )
     } else {
-        val angle = startAngleRadians + sweepAngleRadians
+        val angle = startAngle + sweepAngle
         arcTo(
             x = center.x + cos(angle) * radius,
             y = center.y + sin(angle) * radius,
@@ -410,11 +409,7 @@ private fun PathSegmentsBuilder.arcToRadWithScaledRadius(
     }
 }
 
-private fun getUnitTangentAtStartOfArc(
-    from: Point,
-    to: Point,
-    radius: Double
-): Point {
+private fun getUnitTangentAtStartOfArc(from: Point, to: Point, radius: Double): Point {
     val mid = (from + to) * 0.5
     val dir = to - from
     val len = sqrt(dir.x * dir.x + dir.y * dir.y)
