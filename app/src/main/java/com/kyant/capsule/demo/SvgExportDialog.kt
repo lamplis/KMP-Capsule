@@ -86,15 +86,27 @@ fun SvgExportDialog(
         LaunchedEffect(Unit) {
             launch {
                 snapshotFlow { widthText.text.toString().toDoubleOrNull() }
-                    .collectLatest { it?.let { width = it } }
+                    .collectLatest {
+                        if (it != null && it > 0) {
+                            width = it
+                        }
+                    }
             }
             launch {
                 snapshotFlow { heightText.text.toString().toDoubleOrNull() }
-                    .collectLatest { it?.let { height = it } }
+                    .collectLatest {
+                        if (it != null && it > 0) {
+                            height = it
+                        }
+                    }
             }
             launch {
                 snapshotFlow { radiusText.text.toString().toDoubleOrNull() }
-                    .collectLatest { it?.let { radius = it } }
+                    .collectLatest {
+                        if (it != null && it >= 0) {
+                            radius = it
+                        }
+                    }
             }
         }
 
