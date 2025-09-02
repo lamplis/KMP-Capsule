@@ -447,7 +447,7 @@ data class G2Continuity(
             arcTo(
                 center = Point(width - radius, height - radius),
                 radius = radius,
-                startAngle = bezRad + arcRad,
+                startAngle = bezRad,
                 sweepAngle = sweepRad
             )
 
