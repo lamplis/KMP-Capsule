@@ -56,8 +56,19 @@ fun MainContent() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        var isSvgExportDialogVisible by remember { mutableStateOf(false) }
+
         var showBaseline by remember { mutableStateOf(false) }
         var showCurvatureComb by remember { mutableStateOf(false) }
+
+        val maxRadius = with(LocalDensity.current) {
+            LocalWindowInfo.current.containerSize.width.toDp() / 2f - 16.dp
+        }
+        val radiusDp = remember { mutableFloatStateOf(48f) }
+        var invertedAspectRatio by remember { mutableStateOf(false) }
+        val aspectRatio = remember { mutableFloatStateOf(1f) }
+        var scale by remember { mutableFloatStateOf(0.75f) }
+        var offset by remember { mutableStateOf(Offset.Zero) }
 
         val defaultContinuity = remember { G2Continuity() }
 
@@ -91,17 +102,6 @@ fun MainContent() {
                 )
             }
         }
-
-        val maxRadius = with(LocalDensity.current) {
-            LocalWindowInfo.current.containerSize.width.toDp() / 2f - 16.dp
-        }
-        val radiusDp = remember { mutableFloatStateOf(48f) }
-        var invertedAspectRatio by remember { mutableStateOf(false) }
-        val aspectRatio = remember { mutableFloatStateOf(1.618f) }
-        var scale by remember { mutableFloatStateOf(0.75f) }
-        var offset by remember { mutableStateOf(Offset.Zero) }
-
-        var isSvgExportDialogVisible by remember { mutableStateOf(false) }
 
         Box(
             Modifier
@@ -303,7 +303,7 @@ fun MainContent() {
                             .background(Color(0xFF90CAF9))
                             .clickable {
                                 radiusDp.floatValue = 48f
-                                aspectRatio.floatValue = 1.618f
+                                aspectRatio.floatValue = 1f
                                 scale = 0.75f
                                 offset = Offset.Zero
                             }
