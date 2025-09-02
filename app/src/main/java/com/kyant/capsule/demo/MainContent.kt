@@ -64,7 +64,7 @@ fun MainContent() {
         val maxRadius = with(LocalDensity.current) {
             LocalWindowInfo.current.containerSize.width.toDp() / 2f - 16.dp
         }
-        val radiusDp = remember { mutableFloatStateOf(48f) }
+        val radiusDp = remember { mutableFloatStateOf(64f) }
         var invertedAspectRatio by remember { mutableStateOf(false) }
         val aspectRatio = remember { mutableFloatStateOf(1f) }
         var scale by remember { mutableFloatStateOf(0.75f) }
@@ -302,7 +302,7 @@ fun MainContent() {
                             .clip(ContinuousCapsule)
                             .background(Color(0xFF90CAF9))
                             .clickable {
-                                radiusDp.floatValue = 48f
+                                radiusDp.floatValue = 64f
                                 aspectRatio.floatValue = 1f
                                 scale = 0.75f
                                 offset = Offset.Zero
