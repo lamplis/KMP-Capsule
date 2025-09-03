@@ -2,6 +2,7 @@ package com.kyant.capsule.continuities
 
 import androidx.annotation.FloatRange
 import androidx.compose.runtime.Immutable
+import androidx.compose.ui.util.fastCoerceAtLeast
 import com.kyant.capsule.core.CubicBezier
 import com.kyant.capsule.core.Point
 import com.kyant.capsule.lerp
@@ -37,39 +38,15 @@ data class G2ContinuityConfig(
                 Point(sin, 1.0 - cos)
             )
         } else {
-            val endTangent =
-                if (arcFraction > 0.0 && arcCurvatureScale > 0.0) {
-                    getUnitTangentAtStartOfArc(
-                        from = Point(sin, 1.0 - cos),
-                        to = Point(
-                            sin(bezierRadians + arcRadians),
-                            1.0 - cos(bezierRadians + arcRadians)
-                        ),
-                        radius = 1.0 / arcCurvatureScale
-                    )
-                } else {
-                    Point(1.0 / sqrt(2.0), 1.0 / sqrt(2.0))
-                }
-
-            /* solved using G2 continuity conditions:
-                start = Point(-extendedFraction, 0.0)
-                end = Point(sin, 1.0 - cos)
-                startTangent = Point(1.0, 0.0)
-                endTangent = endTangent
-                startCurvature = 0.0
+            val radiusScale = 1.0 / arcCurvatureScale
+            val arcCenter = Point(0.0, 1.0) + Point(1.0 / sqrt(2.0), -1.0 / sqrt(2.0)) * (1.0 - radiusScale)
+            val arcStartPoint = arcCenter + Point(sin, -cos) * radiusScale
+            return generateG2ContinuousBezierWithZeroStartCurvature(
+                start = Point(-extendedFraction, 0.0),
+                end = arcStartPoint,
+                startTangent = Point(1.0, 0.0),
+                endTangent = Point(cos, sin),
                 endCurvature = bezierCurvatureScale
-            */
-            val b1 = 1.5 * bezierCurvatureScale
-            val a2 = endTangent.y
-            val dx = sin - (-extendedFraction)
-            val dy = 1.0 - cos
-            val a3 = -dy
-            val b3 = dy * endTangent.x - dx * endTangent.y
-            CubicBezier(
-                Point(-extendedFraction, 0.0),
-                Point(-extendedFraction + (-b3 / a2 - b1 * a3 * a3 / a2 / a2 / a2), 0.0),
-                Point(sin - dy * (endTangent.x / endTangent.y), 0.0),
-                Point(sin, 1.0 - cos)
             )
         }
     }
@@ -78,16 +55,16 @@ data class G2ContinuityConfig(
 
         val RoundedRectangle: G2ContinuityConfig =
             G2ContinuityConfig(
-                extendedFraction = 1.0,
-                arcFraction = 0.25,
-                bezierCurvatureScale = 1.06,
-                arcCurvatureScale = 1.06
+                extendedFraction = 793.0 / 1500.0,
+                arcFraction = 5.0 / 9.0,
+                bezierCurvatureScale = 1500.0 / 1397.68,
+                arcCurvatureScale = 1500.0 / 1397.68
             )
 
         val Capsule: G2ContinuityConfig =
             G2ContinuityConfig(
-                extendedFraction = 0.75,
-                arcFraction = 0.20,
+                extendedFraction = 793.0 / 1500.0,
+                arcFraction = (5.0 / 9.0) * 0.5,
                 bezierCurvatureScale = 1.0,
                 arcCurvatureScale = 1.0
             )
@@ -111,15 +88,33 @@ fun lerp(start: G2ContinuityConfig, stop: G2ContinuityConfig, fraction: Double):
     )
 }
 
-private fun getUnitTangentAtStartOfArc(from: Point, to: Point, radius: Double): Point {
-    val mid = (from + to) * 0.5
-    val dir = to - from
-    val len = sqrt(dir.x * dir.x + dir.y * dir.y)
-    val height = sqrt(radius * radius - (len * 0.5) * (len * 0.5))
-    val norm = Point(-dir.y / len, dir.x / len)
-    val center = mid + norm * height * if (radius > 0) 1.0 else -1.0
-    return Point(
-        -(from.y - center.y) / radius,
-        (from.x - center.x) / radius
+private fun generateG2ContinuousBezierWithZeroStartCurvature(
+    start: Point,
+    end: Point,
+    startTangent: Point,
+    endTangent: Point,
+    endCurvature: Double
+): CubicBezier {
+    val a2 = 1.5 * endCurvature
+    val b = startTangent.x * endTangent.y - startTangent.y * endTangent.x
+    val dx = end.x - start.x
+    val dy = end.y - start.y
+    val c1 = -dy * startTangent.x + dx * startTangent.y
+    val c2 = dy * endTangent.x - dx * endTangent.y
+
+    val lambda0 = -c2 / b - a2 * c1 * c1 / b / b / b
+    val lambda3 = -c1 / b
+
+    val p0 = start
+    val p1 = start + Point(
+        (lambda0 * startTangent.x).fastCoerceAtLeast(0.0),
+        (lambda0 * startTangent.y).fastCoerceAtLeast(0.0)
     )
+    val p2 = end - Point(
+        (lambda3 * endTangent.x).fastCoerceAtLeast(0.0),
+        (lambda3 * endTangent.y).fastCoerceAtLeast(0.0)
+    )
+    val p3 = end
+
+    return CubicBezier(p0, p1, p2, p3)
 }

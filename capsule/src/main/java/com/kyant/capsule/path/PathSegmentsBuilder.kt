@@ -1,9 +1,6 @@
 package com.kyant.capsule.path
 
 import com.kyant.capsule.core.Point
-import kotlin.math.PI
-import kotlin.math.atan2
-import kotlin.math.sqrt
 
 inline fun buildPathSegments(block: PathSegmentsBuilder.() -> Unit): PathSegments {
     return PathSegmentsBuilder().apply(block).build()
@@ -40,27 +37,6 @@ class PathSegmentsBuilder {
         val segment = PathSegment.Arc(center, radius, startAngle, sweepAngle)
         segments += segment
         currentPoint = segment.to
-    }
-
-    fun arcTo(x: Double, y: Double, radius: Double) {
-        val from = currentPoint
-        val to = Point(x, y)
-        val mid = (from + to) * 0.5
-        val dir = to - from
-        val len = sqrt(dir.x * dir.x + dir.y * dir.y)
-        val height = sqrt(radius * radius - (len * 0.5) * (len * 0.5))
-        val norm = Point(-dir.y / len, dir.x / len)
-        val center = mid + norm * height * if (radius > 0) 1.0 else -1.0
-        val startAngle = atan2(from.y - center.y, from.x - center.x)
-        val endAngle = atan2(to.y - center.y, to.x - center.x)
-        val sweepAngle = when {
-            radius > 0 && endAngle >= startAngle -> endAngle - startAngle
-            radius > 0 && endAngle < startAngle -> endAngle + 2.0 * PI - startAngle
-            radius < 0 && endAngle <= startAngle -> endAngle - startAngle
-            radius < 0 && endAngle > startAngle -> endAngle - 2.0 * PI - startAngle
-            else -> 0.0
-        }
-        arcTo(center, radius, startAngle, sweepAngle)
     }
 
     fun cubicTo(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) {

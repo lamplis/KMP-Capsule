@@ -508,10 +508,11 @@ private fun PathSegmentsBuilder.arcToWithScaledRadius(
         )
     }
 
-    val angle = startAngle + sweepAngle
+    val centerAngle = startAngle + sweepAngle * 0.5
     return arcTo(
-        x = center.x + cos(angle) * radius,
-        y = center.y + sin(angle) * radius,
-        radius = radius * radiusScale
+        center = center + Point(cos(centerAngle), sin(centerAngle)) * radius * (1.0 - radiusScale),
+        radius = radius * radiusScale,
+        startAngle = startAngle,
+        sweepAngle = sweepAngle
     )
 }
