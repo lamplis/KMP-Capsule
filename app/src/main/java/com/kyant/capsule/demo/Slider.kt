@@ -28,18 +28,18 @@ fun Slider(
     modifier: Modifier = Modifier
 ) {
     val layoutDirection = LocalLayoutDirection.current
-    val sliderColor = Color(0xFF90CAF9)
+    val sliderColor = Color(0xFF0088FF)
 
     val range = valueRange.endInclusive - valueRange.start
 
     Column(
         modifier
-            .border(1.dp, Color(0xFF2196F3), ContinuousCapsule)
+            .border(1.dp, sliderColor, ContinuousCapsule)
             .clip(ContinuousCapsule)
             .drawBehind {
                 val value = (state.value - valueRange.start) / range
                 drawRect(
-                    sliderColor,
+                    sliderColor.copy(alpha = 1f / 3f),
                     topLeft =
                         if (layoutDirection == Ltr) Offset.Zero
                         else Offset(size.width * (1f - value), 0f),

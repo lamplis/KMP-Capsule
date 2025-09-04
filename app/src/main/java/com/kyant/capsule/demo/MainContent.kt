@@ -44,11 +44,14 @@ import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastRoundToInt
 import com.kyant.capsule.ContinuousCapsule
 import com.kyant.capsule.continuities.G2Continuity
-import com.kyant.capsule.continuities.G2ContinuityConfig
+import com.kyant.capsule.continuities.G2ContinuityProfile
 import com.kyant.capsule.path.toPath
 
 @Composable
 fun MainContent() {
+    val color = Color(0xFF0088FF)
+    val contentColor = { Color.White }
+
     Column(
         Modifier
             .safeDrawingPadding()
@@ -73,29 +76,29 @@ fun MainContent() {
         val defaultContinuity = remember { G2Continuity() }
 
         val extendedFraction =
-            remember { mutableFloatStateOf(defaultContinuity.config.extendedFraction.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.profile.extendedFraction.toFloat()) }
         val arcFraction =
-            remember { mutableFloatStateOf(defaultContinuity.config.arcFraction.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.profile.arcFraction.toFloat()) }
         val bezierCurvatureScale =
-            remember { mutableFloatStateOf(defaultContinuity.config.bezierCurvatureScale.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.profile.bezierCurvatureScale.toFloat()) }
         val arcCurvatureScale =
-            remember { mutableFloatStateOf(defaultContinuity.config.arcCurvatureScale.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.profile.arcCurvatureScale.toFloat()) }
 
         val capsuleExtendedFraction =
-            remember { mutableFloatStateOf(defaultContinuity.capsuleConfig.extendedFraction.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.capsuleProfile.extendedFraction.toFloat()) }
         val capsuleArcFraction =
-            remember { mutableFloatStateOf(defaultContinuity.capsuleConfig.arcFraction.toFloat()) }
+            remember { mutableFloatStateOf(defaultContinuity.capsuleProfile.arcFraction.toFloat()) }
 
         val currentContinuity by remember {
             derivedStateOf {
                 G2Continuity(
-                    config = G2ContinuityConfig.RoundedRectangle.copy(
+                    profile = G2ContinuityProfile.RoundedRectangle.copy(
                         extendedFraction = extendedFraction.floatValue.toDouble(),
                         arcFraction = arcFraction.floatValue.toDouble(),
                         bezierCurvatureScale = bezierCurvatureScale.floatValue.toDouble(),
                         arcCurvatureScale = arcCurvatureScale.floatValue.toDouble()
                     ),
-                    capsuleConfig = G2ContinuityConfig.Capsule.copy(
+                    capsuleProfile = G2ContinuityProfile.Capsule.copy(
                         extendedFraction = capsuleExtendedFraction.floatValue.toDouble(),
                         arcFraction = capsuleArcFraction.floatValue.toDouble()
                     )
@@ -168,7 +171,7 @@ fun MainContent() {
 
                         drawPath(
                             pathSegments.toPath(),
-                            Color(0xFF2196F3)
+                            color
                         )
                     }
                     .layout { measurable, constraints ->
@@ -204,7 +207,7 @@ fun MainContent() {
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable { showBaseline = !showBaseline }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
@@ -212,14 +215,15 @@ fun MainContent() {
                 ) {
                     BasicText(
                         if (showBaseline) "Hide baseline"
-                        else "Show baseline"
+                        else "Show baseline",
+                        color = contentColor
                     )
                 }
 
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable { showCurvatureComb = !showCurvatureComb }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
@@ -227,23 +231,24 @@ fun MainContent() {
                 ) {
                     BasicText(
                         if (showCurvatureComb) "Hide curvature comb"
-                        else "Show curvature comb"
+                        else "Show curvature comb",
+                        color = contentColor
                     )
                 }
 
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable {
-                            with(defaultContinuity.config) {
+                            with(defaultContinuity.profile) {
                                 extendedFraction.floatValue = this.extendedFraction.toFloat()
                                 arcFraction.floatValue = this.arcFraction.toFloat()
                                 bezierCurvatureScale.floatValue = this.bezierCurvatureScale.toFloat()
                                 arcCurvatureScale.floatValue = this.arcCurvatureScale.toFloat()
                             }
 
-                            with(defaultContinuity.capsuleConfig) {
+                            with(defaultContinuity.capsuleProfile) {
                                 capsuleExtendedFraction.floatValue = this.extendedFraction.toFloat()
                                 capsuleArcFraction.floatValue = this.arcFraction.toFloat()
                             }
@@ -252,19 +257,25 @@ fun MainContent() {
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Reset configs")
+                    BasicText(
+                        "Reset profiles",
+                        color = contentColor
+                    )
                 }
 
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable { isSvgExportDialogVisible = true }
                         .height(40.dp)
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Export SVG")
+                    BasicText(
+                        "Export SVG",
+                        color = contentColor
+                    )
                 }
 
                 if (isSvgExportDialogVisible) {
@@ -300,7 +311,7 @@ fun MainContent() {
                     Box(
                         Modifier
                             .clip(ContinuousCapsule)
-                            .background(Color(0xFF90CAF9))
+                            .background(color)
                             .clickable {
                                 radiusDp.floatValue = 64f
                                 aspectRatio.floatValue = 1f
@@ -311,12 +322,15 @@ fun MainContent() {
                             .padding(horizontal = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        BasicText("Reset")
+                        BasicText(
+                            "Reset",
+                            color = contentColor
+                        )
                     }
                     Box(
                         Modifier
                             .clip(ContinuousCapsule)
-                            .background(Color(0xFF90CAF9))
+                            .background(color)
                             .clickable { invertedAspectRatio = !invertedAspectRatio }
                             .height(40.dp)
                             .padding(horizontal = 12.dp),
@@ -324,59 +338,60 @@ fun MainContent() {
                     ) {
                         BasicText(
                             if (invertedAspectRatio) "Inverted aspect ratio"
-                            else "Invert aspect ratio"
+                            else "Invert aspect ratio",
+                            color = contentColor
                         )
                     }
                 }
             }
 
             BasicText(
-                "Rounded rectangle G2 config",
+                "G2 profile of rounded rectangle",
                 Modifier.padding(horizontal = 8.dp)
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Slider(
                     extendedFraction,
-                    0f..2f,
+                    0f..1f,
                     "Extended fraction",
-                    { "%.1f".format(it * 100f) + "%" },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
                 Slider(
                     arcFraction,
-                    0f..1f,
+                    0f..0.8f,
                     "Arc fraction",
-                    { "%.1f".format(it * 100f) + "%" },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
                 Slider(
                     bezierCurvatureScale,
-                    0f..3f,
+                    0.5f..2f,
                     "Bezier curvature scale",
-                    { "%.2f".format(it) },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
                 Slider(
                     arcCurvatureScale,
-                    0f..3f,
+                    0.85f..1.5f,
                     "Arc curvature scale",
-                    { "%.2f".format(it) },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
             }
 
             BasicText(
-                "Capsule G2 config",
+                "G2 profile of capsule",
                 Modifier.padding(horizontal = 8.dp)
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Slider(
                     capsuleExtendedFraction,
-                    0f..2f,
+                    0f..1f,
                     "Extended fraction",
-                    { "%.1f".format(it * 100f) + "%" },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
                 Slider(
                     capsuleArcFraction,
                     0f..1f,
                     "Arc fraction",
-                    { "%.1f".format(it * 100f) + "%" },
+                    { "%.3f".format(it * 100f) + "%" }
                 )
             }
         }

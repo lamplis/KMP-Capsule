@@ -62,6 +62,9 @@ fun SvgExportDialog(
     continuity: () -> Continuity
 ) {
     Dialog(onDismissRequest) {
+        val color = Color(0xFF0088FF)
+        val contentColor = { Color.White }
+
         val widthText = rememberTextFieldState("1000")
         val heightText = rememberTextFieldState("1000")
         val radiusText = rememberTextFieldState("250")
@@ -139,7 +142,7 @@ fun SvgExportDialog(
                         }) {
                             drawPath(
                                 currentPathSegments.toPath(),
-                                Color.LightGray
+                                color
                             )
                         }
                     }
@@ -225,7 +228,7 @@ fun SvgExportDialog(
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable {
                             val svg = currentPathSegments.toSvg(asDocument = true)
                             val tempFile = File(context.cacheDir, "continuous_rounded_rect.svg").apply {
@@ -248,13 +251,16 @@ fun SvgExportDialog(
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Share")
+                    BasicText(
+                        "Share",
+                        color = contentColor
+                    )
                 }
 
                 Box(
                     Modifier
                         .clip(ContinuousCapsule)
-                        .background(Color(0xFF90CAF9))
+                        .background(color)
                         .clickable {
                             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                                 addCategory(Intent.CATEGORY_OPENABLE)
@@ -268,7 +274,10 @@ fun SvgExportDialog(
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    BasicText("Save")
+                    BasicText(
+                        "Save",
+                        color = contentColor
+                    )
                 }
             }
         }

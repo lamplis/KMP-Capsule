@@ -87,8 +87,8 @@ data object G1Continuity : Continuity {
             is G1Continuity -> this
             is G2Continuity ->
                 G2Continuity(
-                    config = lerp(G2ContinuityConfig.G1Equivalent, stop.config, fraction),
-                    capsuleConfig = lerp(G2ContinuityConfig.G1Equivalent, stop.capsuleConfig, fraction)
+                    profile = lerp(G2ContinuityProfile.G1Equivalent, stop.profile, fraction),
+                    capsuleProfile = lerp(G2ContinuityProfile.G1Equivalent, stop.capsuleProfile, fraction)
                 )
 
             else -> stop.lerp(this, 1f - fraction)

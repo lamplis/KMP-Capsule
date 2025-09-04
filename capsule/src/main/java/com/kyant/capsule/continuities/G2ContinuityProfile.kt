@@ -12,7 +12,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @Immutable
-data class G2ContinuityConfig(
+data class G2ContinuityProfile(
     @param:FloatRange(from = 0.0) val extendedFraction: Double,
     @param:FloatRange(from = 0.0, to = 1.0) val arcFraction: Double,
     @param:FloatRange(from = 0.0) val bezierCurvatureScale: Double,
@@ -53,24 +53,24 @@ data class G2ContinuityConfig(
 
     companion object {
 
-        val RoundedRectangle: G2ContinuityConfig =
-            G2ContinuityConfig(
+        val RoundedRectangle: G2ContinuityProfile =
+            G2ContinuityProfile(
                 extendedFraction = 0.5286651,
                 arcFraction = 5.0 / 9.0,
                 bezierCurvatureScale = 1.0732051,
                 arcCurvatureScale = 1.0732051
             )
 
-        val Capsule: G2ContinuityConfig =
-            G2ContinuityConfig(
+        val Capsule: G2ContinuityProfile =
+            G2ContinuityProfile(
                 extendedFraction = 0.5286651,
                 arcFraction = (5.0 / 9.0) * 0.5,
                 bezierCurvatureScale = 1.0,
                 arcCurvatureScale = 1.0
             )
 
-        val G1Equivalent: G2ContinuityConfig =
-            G2ContinuityConfig(
+        val G1Equivalent: G2ContinuityProfile =
+            G2ContinuityProfile(
                 extendedFraction = 0.0,
                 arcFraction = 1.0,
                 bezierCurvatureScale = 1.0,
@@ -79,8 +79,8 @@ data class G2ContinuityConfig(
     }
 }
 
-fun lerp(start: G2ContinuityConfig, stop: G2ContinuityConfig, fraction: Double): G2ContinuityConfig {
-    return G2ContinuityConfig(
+fun lerp(start: G2ContinuityProfile, stop: G2ContinuityProfile, fraction: Double): G2ContinuityProfile {
+    return G2ContinuityProfile(
         extendedFraction = lerp(start.extendedFraction, stop.extendedFraction, fraction),
         arcFraction = lerp(start.arcFraction, stop.arcFraction, fraction),
         bezierCurvatureScale = lerp(start.bezierCurvatureScale, stop.bezierCurvatureScale, fraction),
