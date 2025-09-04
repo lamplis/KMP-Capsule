@@ -150,58 +150,57 @@ fun SvgExportDialog(
                     .align(Alignment.CenterHorizontally)
             )
 
-            ColumnNoInline(Modifier.padding(8.dp)) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            RowNoInline(
+                Modifier.padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        BasicText("Width")
-                        BasicTextField(
-                            widthText,
-                            Modifier.fillMaxWidth(),
-                            textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
-                            )
+                    BasicText("Width")
+                    BasicTextField(
+                        widthText,
+                        Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
                         )
-                    }
+                    )
+                }
 
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        BasicText("Height")
-                        BasicTextField(
-                            heightText,
-                            Modifier.fillMaxWidth(),
-                            textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Next
-                            )
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    BasicText("Height")
+                    BasicTextField(
+                        heightText,
+                        Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
                         )
-                    }
+                    )
+                }
 
-                    Column(
-                        Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        BasicText("Radius")
-                        BasicTextField(
-                            radiusText,
-                            Modifier.fillMaxWidth(),
-                            textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Number,
-                                imeAction = ImeAction.Done
-                            )
+                Column(
+                    Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    BasicText("Radius")
+                    BasicTextField(
+                        radiusText,
+                        Modifier.fillMaxWidth(),
+                        textStyle = TextStyle(color = Color.Black.copy(alpha = 0.6f)),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
                         )
-                    }
+                    )
                 }
             }
 
