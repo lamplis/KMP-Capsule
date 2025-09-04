@@ -62,6 +62,14 @@ ContinuousRoundedRectangle(16.dp, continuity = g2)
 ContinuousCapsule(continuity = g2)
 ```
 
+- The following parameters are supported by `G2ContinuityProfile`:
+    - **extended fraction:** the transition length between original corner and line, relative to the corner radius
+    - **arc fraction:** the ratio of the arc to the corner
+    - **Bezier curvature scale**: the multiplier of the end curvature of the Bezier curve
+    - **arc curvature scale**: the multiplier of the arc curvature
+      **Note:** It guarantees G1 continuity at least. Only if the Bezier curvature scale equals the arc curvature scale,
+      it will have exact G2 continuity.
+
 ## Tips
 
 ### Performance
@@ -72,17 +80,3 @@ calculate the control points, achieving optimal theoretical performance.
 When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
 Use `animatedShape.copy(continuity = G1Continuity)` to temporarily disable corner smoothing during the
 animation.
-
-### Exact G2 continuity
-
-The following code creates an exact (perfect) G2 continuity. However, it is not recommended to use this in practice
-because its curvature is not optimal.
-
-```kotlin
-val exactG2 = G2Continuity(
-    profile = G2ContinuityProfile.RoundedRectangle.copy(
-        bezierCurvatureScale = 1.0,
-        arcCurvatureScale = 1.0
-    )
-)
-```
