@@ -12,8 +12,8 @@ fun buildCirclePathSegments(center: Point, radius: Double): PathSegments {
 
 class PathSegmentsBuilder {
 
-    private var startPoint = Point.Companion.Zero
-    private var currentPoint = Point.Companion.Zero
+    private var startPoint = Point.Zero
+    private var currentPoint = Point.Zero
     private var didMove = false
 
     private var segments = mutableListOf<PathSegment>()

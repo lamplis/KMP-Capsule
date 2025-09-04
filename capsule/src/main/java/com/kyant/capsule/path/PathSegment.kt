@@ -1,6 +1,7 @@
 package com.kyant.capsule.path
 
 import android.graphics.RectF
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.asAndroidPath
 import com.kyant.capsule.core.Point
@@ -8,6 +9,7 @@ import java.lang.Math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
+@Immutable
 sealed interface PathSegment {
 
     val from: Point
