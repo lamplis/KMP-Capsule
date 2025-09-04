@@ -62,13 +62,15 @@ ContinuousRoundedRectangle(16.dp, continuity = g2)
 ContinuousCapsule(continuity = g2)
 ```
 
-- The following parameters are supported by `G2ContinuityProfile`:
-    - **extended fraction:** the transition length between original corner and line, relative to the corner radius
-    - **arc fraction:** the ratio of the arc to the corner
-    - **Bezier curvature scale**: the multiplier of the end curvature of the Bezier curve
-    - **arc curvature scale**: the multiplier of the arc curvature
-      **Note:** It guarantees G1 continuity at least. Only if the Bezier curvature scale equals the arc curvature scale,
-      it will have exact G2 continuity.
+The following parameters are supported by `G2ContinuityProfile`:
+
+- **extended fraction:** the transition length between original corner and line, relative to the corner radius
+- **arc fraction:** the ratio of the arc to the corner
+- **Bezier curvature scale**: the multiplier of the end curvature of the Bezier curve
+- **arc curvature scale**: the multiplier of the arc curvature
+
+**Note:** It guarantees G1 continuity at least. Only if the Bezier curvature scale equals the arc curvature scale,
+it will have exact G2 continuity.
 
 ## Tips
 
