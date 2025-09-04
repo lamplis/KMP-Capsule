@@ -487,27 +487,6 @@ private fun PathSegmentsBuilder.arcToWithScaledRadius(
     startAngle: Double,
     sweepAngle: Double
 ) {
-    if (radius == 0.0 || sweepAngle == 0.0) {
-        return
-    }
-
-    if (radiusScale.isInfinite()) {
-        val angle = startAngle + sweepAngle
-        return lineTo(
-            center.x + cos(angle) * radius,
-            center.y + sin(angle) * radius
-        )
-    }
-
-    if (radiusScale == 1.0) {
-        return arcTo(
-            center = center,
-            radius = radius,
-            startAngle = startAngle,
-            sweepAngle = sweepAngle
-        )
-    }
-
     val centerAngle = startAngle + sweepAngle * 0.5
     return arcTo(
         center = center + Point(cos(centerAngle), sin(centerAngle)) * radius * (1.0 - radiusScale),
