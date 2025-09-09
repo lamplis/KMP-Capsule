@@ -63,8 +63,8 @@ data class G2ContinuityProfile(
 
         val Capsule: G2ContinuityProfile =
             G2ContinuityProfile(
-                extendedFraction = 0.5286651,
-                arcFraction = (5.0 / 9.0) * 0.5,
+                extendedFraction = 0.5286651 * 0.75,
+                arcFraction = 0.0,
                 bezierCurvatureScale = 1.0,
                 arcCurvatureScale = 1.0
             )
