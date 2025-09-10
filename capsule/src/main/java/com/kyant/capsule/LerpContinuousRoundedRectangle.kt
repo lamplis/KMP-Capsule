@@ -17,6 +17,15 @@ fun lerp(
     return LerpContinuousRoundedRectangle(start, stop, fraction)
 }
 
+@Stable
+fun lerp(
+    start: AbsoluteContinuousRoundedRectangle,
+    stop: AbsoluteContinuousRoundedRectangle,
+    fraction: Float
+): AbsoluteContinuousRoundedRectangle {
+    return LerpAbsoluteContinuousRoundedRectangle(start, stop, fraction)
+}
+
 @Immutable
 private data class LerpContinuousRoundedRectangle(
     val start: ContinuousRoundedRectangle,
@@ -27,6 +36,23 @@ private data class LerpContinuousRoundedRectangle(
     topEnd = LerpCornerSize(start.topEnd, stop.topEnd, fraction),
     bottomEnd = LerpCornerSize(start.bottomEnd, stop.bottomEnd, fraction),
     bottomStart = LerpCornerSize(start.bottomStart, stop.bottomStart, fraction),
+    continuity = when (fraction) {
+        0f -> start.continuity
+        1f -> stop.continuity
+        else -> start.continuity.lerp(stop.continuity, fraction.toDouble())
+    }
+)
+
+@Immutable
+private data class LerpAbsoluteContinuousRoundedRectangle(
+    val start: AbsoluteContinuousRoundedRectangle,
+    val stop: AbsoluteContinuousRoundedRectangle,
+    val fraction: Float
+) : AbsoluteContinuousRoundedRectangle(
+    topLeft = LerpCornerSize(start.topStart, stop.topStart, fraction),
+    topRight = LerpCornerSize(start.topEnd, stop.topEnd, fraction),
+    bottomRight = LerpCornerSize(start.bottomEnd, stop.bottomEnd, fraction),
+    bottomLeft = LerpCornerSize(start.bottomStart, stop.bottomStart, fraction),
     continuity = when (fraction) {
         0f -> start.continuity
         1f -> stop.continuity

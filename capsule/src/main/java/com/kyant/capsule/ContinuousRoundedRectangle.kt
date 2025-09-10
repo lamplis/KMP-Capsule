@@ -222,10 +222,10 @@ fun ContinuousRoundedRectangle(
 
 @Stable
 fun ContinuousRoundedRectangle(
-    topStart: Dp = 0.dp,
-    topEnd: Dp = 0.dp,
-    bottomEnd: Dp = 0.dp,
-    bottomStart: Dp = 0.dp,
+    topStart: Dp = 0f.dp,
+    topEnd: Dp = 0f.dp,
+    bottomEnd: Dp = 0f.dp,
+    bottomStart: Dp = 0f.dp,
     continuity: Continuity = Continuity.Default
 ): ContinuousRoundedRectangle =
     ContinuousRoundedRectangle(

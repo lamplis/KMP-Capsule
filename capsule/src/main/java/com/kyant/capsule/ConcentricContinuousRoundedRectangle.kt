@@ -18,6 +18,16 @@ fun ContinuousRoundedRectangle.concentricOutset(padding: Dp): ContinuousRoundedR
     return ConcentricContinuousRoundedRectangle(this, -padding)
 }
 
+@Stable
+fun AbsoluteContinuousRoundedRectangle.concentricInset(padding: Dp): AbsoluteContinuousRoundedRectangle {
+    return ConcentricAbsoluteContinuousRoundedRectangle(this, padding)
+}
+
+@Stable
+fun AbsoluteContinuousRoundedRectangle.concentricOutset(padding: Dp): AbsoluteContinuousRoundedRectangle {
+    return ConcentricAbsoluteContinuousRoundedRectangle(this, -padding)
+}
+
 @Immutable
 private data class ConcentricContinuousRoundedRectangle(
     val containerShape: ContinuousRoundedRectangle,
@@ -27,6 +37,18 @@ private data class ConcentricContinuousRoundedRectangle(
     topEnd = ConcentricCornerSize(containerShape.topEnd, padding),
     bottomEnd = ConcentricCornerSize(containerShape.bottomEnd, padding),
     bottomStart = ConcentricCornerSize(containerShape.bottomStart, padding),
+    continuity = containerShape.continuity
+)
+
+@Immutable
+private data class ConcentricAbsoluteContinuousRoundedRectangle(
+    val containerShape: AbsoluteContinuousRoundedRectangle,
+    val padding: Dp
+) : AbsoluteContinuousRoundedRectangle(
+    topLeft = ConcentricCornerSize(containerShape.topStart, padding),
+    topRight = ConcentricCornerSize(containerShape.topEnd, padding),
+    bottomRight = ConcentricCornerSize(containerShape.bottomEnd, padding),
+    bottomLeft = ConcentricCornerSize(containerShape.bottomStart, padding),
     continuity = containerShape.continuity
 )
 
