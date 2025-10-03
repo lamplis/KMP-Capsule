@@ -42,15 +42,6 @@
             opacity: 0.9;
         }
         
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-        }
-        
         .capsule-demo {
             display: flex;
             justify-content: center;
@@ -65,6 +56,15 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
         .code-block {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -73,6 +73,19 @@
             margin: 1rem 0;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: 'Kotlin';
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
         }
         
         .badge {
@@ -88,6 +101,7 @@
         .badge.android { background: #3ddc84; }
         .badge.ios { background: #007aff; }
         .badge.kmp { background: #7c3aed; }
+        .badge.new { background: #ff6b6b; }
         
         .features {
             display: grid;
@@ -104,6 +118,91 @@
         .feature-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
+        }
+        
+        .toc {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .toc h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+        }
+        
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .toc li {
+            margin: 0.5rem 0;
+        }
+        
+        .toc a {
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .toc a:hover {
+            background-color: #e9ecef;
+        }
+        
+        .platform-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .platform-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .platform-card.android {
+            border-color: #3ddc84;
+        }
+        
+        .platform-card.ios {
+            border-color: #007aff;
+        }
+        
+        .platform-card h4 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .example {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .example-header {
+            background: #f8f9fa;
+            padding: 1rem;
+            font-weight: bold;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .example-content {
+            padding: 1rem;
         }
         
         .footer {
@@ -127,6 +226,42 @@
         .github-link:hover {
             transform: translateY(-2px);
         }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .warning::before {
+            content: '⚠️ ';
+            font-weight: bold;
+        }
+        
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .info::before {
+            content: 'ℹ️ ';
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .platform-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .example-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,8 +274,24 @@
             </div>
         </div>
         
-        <div class="card">
-            <h2>🚀 What is KMP-Capsule?</h2>
+        <div class="toc">
+            <h3>📚 Table of Contents</h3>
+            <ul>
+                <li><a href="#overview">Overview</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
+                <li><a href="#api-reference">API Reference</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#platform-differences">Platform Differences</a></li>
+                <li><a href="#performance">Performance</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+                <li><a href="#credits">Credits</a></li>
+            </ul>
+        </div>
+        
+        <div class="card" id="overview">
+            <h2>🚀 Overview</h2>
             <p>KMP-Capsule is a Kotlin Multiplatform port of the excellent <a href="https://github.com/Kyant0/Capsule">Kyant0/Capsule</a> library. It provides perfect capsule shapes for Compose Multiplatform with platform-specific optimizations.</p>
             
             <div style="margin: 1rem 0;">
@@ -148,79 +299,375 @@
                 <span class="badge android">Android</span>
                 <span class="badge ios">iOS</span>
                 <span class="badge">Compose</span>
+                <span class="badge new">G2 Continuity</span>
+            </div>
+            
+            <div class="info">
+                <strong>Why KMP-Capsule?</strong> While the original Kyant0/Capsule is Android-only, KMP-Capsule extends this excellent work to iOS and other platforms, maintaining the same API while providing platform-optimized implementations.
             </div>
         </div>
         
-        <div class="card">
+        <div class="card" id="features">
             <h2>✨ Features</h2>
             <div class="features">
                 <div class="feature">
                     <div class="feature-icon">🎨</div>
                     <h3>Perfect Capsules</h3>
-                    <p>Create mathematically perfect capsule shapes with G1/G2 continuity</p>
+                    <p>Create mathematically perfect capsule shapes with G1/G2 continuity on Android and optimized pill shapes on iOS</p>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">📱</div>
                     <h3>Cross-Platform</h3>
-                    <p>Works seamlessly on Android and iOS with platform-specific optimizations</p>
+                    <p>Works seamlessly on Android and iOS with platform-specific optimizations and consistent API</p>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">⚡</div>
                     <h3>High Performance</h3>
-                    <p>Optimized rendering with efficient curve calculations</p>
+                    <p>Optimized rendering with efficient curve calculations and platform-specific implementations</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Easy Integration</h3>
+                    <p>Simple submodule setup with expect/actual pattern for clean KMP architecture</p>
                 </div>
             </div>
         </div>
         
-        <div class="card">
+        <div class="card" id="installation">
             <h2>📦 Installation</h2>
-            <p>Add as a submodule to your KMP project:</p>
+            <p>Add KMP-Capsule as a submodule to your KMP project:</p>
+            
+            <h3>1. Add Submodule</h3>
             <div class="code-block">
-# settings.gradle.kts (root)
+# Clone the repository as a submodule
+git submodule add https://github.com/lamplis/KMP-Capsule.git libs/KMP-capsule
+            </div>
+            
+            <h3>2. Configure Gradle</h3>
+            <div class="code-block">
+// settings.gradle.kts (root)
 include(":libs:KMP-Capsule")
 project(":libs:KMP-Capsule").projectDir = File(rootDir, "libs/KMP-capsule/capsule")
-
-# composeApp/build.gradle.kts (commonMain)
+            </div>
+            
+            <h3>3. Add Dependency</h3>
+            <div class="code-block">
+// composeApp/build.gradle.kts (commonMain)
 commonMain.dependencies {
     implementation(project(":libs:KMP-Capsule"))
 }
             </div>
+            
+            <h3>4. Initialize Submodule</h3>
+            <div class="code-block">
+# Initialize and update submodules
+git submodule update --init --recursive
+            </div>
         </div>
         
-        <div class="card">
-            <h2>💻 Usage</h2>
+        <div class="card" id="quick-start">
+            <h2>🚀 Quick Start</h2>
             <p>Replace rounded shapes with <code>ContinuousCapsule</code>:</p>
+            
             <div class="code-block">
 import com.amp_digital.capsule.ContinuousCapsule
 
+@Composable
+fun MyCapsuleButton() {
+    Box(
+        modifier = Modifier
+            .size(200.dp, 60.dp)
+            .clip(ContinuousCapsule)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable { /* Handle click */ },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Capsule Button",
+            color = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+            </div>
+        </div>
+        
+        <div class="card" id="api-reference">
+            <h2>📖 API Reference</h2>
+            
+            <h3>ContinuousCapsule</h3>
+            <p>The main shape provided by KMP-Capsule. It's a platform-agnostic capsule shape that adapts to the container size.</p>
+            
+            <div class="code-block">
+// Import
+import com.amp_digital.capsule.ContinuousCapsule
+
+// Usage
+val shape: CornerBasedShape = ContinuousCapsule
+            </div>
+            
+            <h4>Properties</h4>
+            <ul>
+                <li><strong>Type:</strong> <code>CornerBasedShape</code></li>
+                <li><strong>Platform:</strong> Android, iOS</li>
+                <li><strong>Behavior:</strong> Creates perfect capsule that adapts to container dimensions</li>
+            </ul>
+            
+            <h4>Platform Implementations</h4>
+            <ul>
+                <li><strong>Android:</strong> Delegates to Kyant0's <code>ContinuousCapsule</code> for G2 continuity</li>
+                <li><strong>iOS:</strong> Uses <code>RoundedCornerShape(percent = 50)</code> for optimal performance</li>
+            </ul>
+        </div>
+        
+        <div class="card" id="examples">
+            <h2>💻 Examples</h2>
+            
+            <div class="example-grid">
+                <div class="example">
+                    <div class="example-header">Basic Capsule Button</div>
+                    <div class="example-content">
+                        <div class="code-block">
+@Composable
+fun CapsuleButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .height(48.dp)
+            .clip(ContinuousCapsule)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable { onClick() }
+            .padding(horizontal = 24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <div class="example-header">Floating Action Button</div>
+                    <div class="example-content">
+                        <div class="code-block">
+@Composable
+fun CapsuleFAB(
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .size(56.dp)
+            .clip(ContinuousCapsule)
+            .background(MaterialTheme.colorScheme.primary)
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary
+        )
+    }
+}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <div class="example-header">Navigation Bar</div>
+                    <div class="example-content">
+                        <div class="code-block">
+@Composable
+fun CapsuleNavigationBar(
+    items: List&lt;NavigationItem&gt;
+) {
+    Row(
+        modifier = Modifier
+            .height(72.dp)
+            .clip(ContinuousCapsule)
+            .background(
+                MaterialTheme.colorScheme.surface
+                    .copy(alpha = 0.9f)
+            )
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        items.forEach { item -&gt;
+            CapsuleNavItem(item = item)
+        }
+    }
+}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example">
+                    <div class="example-header">Card with Capsule Corners</div>
+                    <div class="example-content">
+                        <div class="code-block">
+@Composable
+fun CapsuleCard(
+    content: @Composable () -&gt; Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(120.dp),
+        shape = ContinuousCapsule,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Box(
+            modifier = Modifier.padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            content()
+        }
+    }
+}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" id="platform-differences">
+            <h2>📱 Platform Differences</h2>
+            
+            <div class="platform-comparison">
+                <div class="platform-card android">
+                    <h4>🤖 Android</h4>
+                    <ul>
+                        <li><strong>Implementation:</strong> Kyant0 ContinuousCapsule</li>
+                        <li><strong>Continuity:</strong> G2 continuous curves</li>
+                        <li><strong>Performance:</strong> Optimized Bézier calculations</li>
+                        <li><strong>Features:</strong> Advanced curvature profiles</li>
+                        <li><strong>Rendering:</strong> Hardware accelerated</li>
+                    </ul>
+                </div>
+                
+                <div class="platform-card ios">
+                    <h4>🍎 iOS</h4>
+                    <ul>
+                        <li><strong>Implementation:</strong> RoundedCornerShape(50%)</li>
+                        <li><strong>Continuity:</strong> G1 continuous</li>
+                        <li><strong>Performance:</strong> Native iOS optimization</li>
+                        <li><strong>Features:</strong> Standard pill shape</li>
+                        <li><strong>Rendering:</strong> Core Graphics optimized</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="warning">
+                <strong>Note:</strong> While Android provides G2 continuity with advanced curvature profiles, iOS uses a simpler but highly optimized implementation. Both provide excellent visual results for typical use cases.
+            </div>
+        </div>
+        
+        <div class="card" id="performance">
+            <h2>⚡ Performance</h2>
+            
+            <h3>Android Performance</h3>
+            <ul>
+                <li>Uses efficient Bézier curve calculations from Kyant0</li>
+                <li>Hardware-accelerated rendering</li>
+                <li>Optimal for large shapes and frequent updates</li>
+                <li>Consider using <code>G1Continuity</code> for animations if needed</li>
+            </ul>
+            
+            <h3>iOS Performance</h3>
+            <ul>
+                <li>Leverages native Core Graphics optimization</li>
+                <li>Minimal computational overhead</li>
+                <li>Excellent for high-frequency updates</li>
+                <li>Consistent performance across all iOS versions</li>
+            </ul>
+            
+            <h3>Best Practices</h3>
+            <div class="code-block">
+// ✅ Good: Use for buttons, cards, navigation
+Box(modifier = Modifier.clip(ContinuousCapsule))
+
+// ✅ Good: Combine with background
 Box(
     modifier = Modifier
         .clip(ContinuousCapsule)
         .background(color)
 )
+
+// ⚠️ Avoid: Don't use for very small elements (&lt; 16dp)
+// ⚠️ Avoid: Don't use for complex animations without testing
             </div>
         </div>
         
-        <div class="card">
-            <h2>🏗️ Architecture</h2>
-            <p>KMP-Capsule uses the expect/actual pattern for platform-specific implementations:</p>
+        <div class="card" id="troubleshooting">
+            <h2>🔧 Troubleshooting</h2>
+            
+            <h3>Common Issues</h3>
+            
+            <h4>Build Errors</h4>
+            <div class="warning">
+                <strong>Error:</strong> "Unresolved reference: ContinuousCapsule"<br>
+                <strong>Solution:</strong> Ensure you've added the dependency to <code>commonMain.dependencies</code> and imported <code>com.amp_digital.capsule.ContinuousCapsule</code>
+            </div>
+            
+            <h4>Submodule Issues</h4>
+            <div class="warning">
+                <strong>Error:</strong> Submodule not found<br>
+                <strong>Solution:</strong> Run <code>git submodule update --init --recursive</code> to initialize all submodules
+            </div>
+            
+            <h4>Platform-Specific Issues</h4>
+            <div class="info">
+                <strong>Android:</strong> If you see rendering artifacts, ensure you're using the latest version of Compose<br>
+                <strong>iOS:</strong> If shapes appear different, check that you're using the same container dimensions
+            </div>
+            
+            <h3>Debugging Tips</h3>
             <ul>
-                <li><strong>Android:</strong> Delegates to original Kyant0 ContinuousCapsule for G2 continuity</li>
-                <li><strong>iOS:</strong> Uses RoundedCornerShape(percent = 50) for optimal performance</li>
-                <li><strong>Common:</strong> Provides unified API across platforms</li>
+                <li>Use <code>Modifier.border(1.dp, Color.Red)</code> to visualize shape boundaries</li>
+                <li>Test on both platforms to ensure consistent behavior</li>
+                <li>Check container dimensions - capsules adapt to their container size</li>
+                <li>Verify submodule is pointing to the correct commit</li>
             </ul>
         </div>
         
-        <div class="card">
-            <h2>🙏 Credits</h2>
+        <div class="card" id="credits">
+            <h2>🙏 Credits & License</h2>
             <p>Huge thanks to <a href="https://github.com/Kyant0">Kyant0</a> for the original work on Capsule and the deep thought put into G1/G2 continuity and performant curve construction. This project would not exist without their contribution to the Compose ecosystem.</p>
+            
+            <h3>Original Library</h3>
+            <ul>
+                <li><strong>Repository:</strong> <a href="https://github.com/Kyant0/Capsule">Kyant0/Capsule</a></li>
+                <li><strong>Author:</strong> <a href="https://github.com/Kyant0">Kyant0</a></li>
+                <li><strong>License:</strong> Apache-2.0</li>
+            </ul>
+            
+            <h3>This Fork</h3>
+            <ul>
+                <li><strong>Repository:</strong> <a href="https://github.com/lamplis/KMP-Capsule">lamplis/KMP-Capsule</a></li>
+                <li><strong>License:</strong> Apache-2.0 (same as upstream)</li>
+                <li><strong>Purpose:</strong> KMP compatibility and cross-platform support</li>
+            </ul>
         </div>
         
         <div class="footer">
             <a href="https://github.com/lamplis/KMP-Capsule" class="github-link">
                 📂 View on GitHub
             </a>
-            <p>Licensed under Apache-2.0</p>
+            <a href="https://github.com/lamplis/KMP-Capsule/issues" class="github-link">
+                🐛 Report Issues
+            </a>
+            <p>Licensed under Apache-2.0 | Made with ❤️ for the KMP community</p>
         </div>
     </div>
 </body>
