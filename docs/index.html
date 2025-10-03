@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMP-Capsule - Kotlin Multiplatform Capsule Shapes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .capsule-demo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 100px;
+            margin: 2rem 0;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            overflow-x: auto;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 0.25rem;
+        }
+        
+        .badge.android { background: #3ddc84; }
+        .badge.ios { background: #007aff; }
+        .badge.kmp { background: #7c3aed; }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 3rem;
+            opacity: 0.8;
+        }
+        
+        .github-link {
+            display: inline-block;
+            background: #24292e;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            margin: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .github-link:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 KMP-Capsule</h1>
+            <p>Kotlin Multiplatform Capsule Shapes for Compose</p>
+            <div class="capsule-demo">
+                Perfect Capsule Shape
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🚀 What is KMP-Capsule?</h2>
+            <p>KMP-Capsule is a Kotlin Multiplatform port of the excellent <a href="https://github.com/Kyant0/Capsule">Kyant0/Capsule</a> library. It provides perfect capsule shapes for Compose Multiplatform with platform-specific optimizations.</p>
+            
+            <div style="margin: 1rem 0;">
+                <span class="badge kmp">Kotlin Multiplatform</span>
+                <span class="badge android">Android</span>
+                <span class="badge ios">iOS</span>
+                <span class="badge">Compose</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>✨ Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Perfect Capsules</h3>
+                    <p>Create mathematically perfect capsule shapes with G1/G2 continuity</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📱</div>
+                    <h3>Cross-Platform</h3>
+                    <p>Works seamlessly on Android and iOS with platform-specific optimizations</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>High Performance</h3>
+                    <p>Optimized rendering with efficient curve calculations</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>📦 Installation</h2>
+            <p>Add as a submodule to your KMP project:</p>
+            <div class="code-block">
+# settings.gradle.kts (root)
+include(":libs:KMP-Capsule")
+project(":libs:KMP-Capsule").projectDir = File(rootDir, "libs/KMP-capsule/capsule")
+
+# composeApp/build.gradle.kts (commonMain)
+commonMain.dependencies {
+    implementation(project(":libs:KMP-Capsule"))
+}
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>💻 Usage</h2>
+            <p>Replace rounded shapes with <code>ContinuousCapsule</code>:</p>
+            <div class="code-block">
+import com.amp_digital.capsule.ContinuousCapsule
+
+Box(
+    modifier = Modifier
+        .clip(ContinuousCapsule)
+        .background(color)
+)
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🏗️ Architecture</h2>
+            <p>KMP-Capsule uses the expect/actual pattern for platform-specific implementations:</p>
+            <ul>
+                <li><strong>Android:</strong> Delegates to original Kyant0 ContinuousCapsule for G2 continuity</li>
+                <li><strong>iOS:</strong> Uses RoundedCornerShape(percent = 50) for optimal performance</li>
+                <li><strong>Common:</strong> Provides unified API across platforms</li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2>🙏 Credits</h2>
+            <p>Huge thanks to <a href="https://github.com/Kyant0">Kyant0</a> for the original work on Capsule and the deep thought put into G1/G2 continuity and performant curve construction. This project would not exist without their contribution to the Compose ecosystem.</p>
+        </div>
+        
+        <div class="footer">
+            <a href="https://github.com/lamplis/KMP-Capsule" class="github-link">
+                📂 View on GitHub
+            </a>
+            <p>Licensed under Apache-2.0</p>
+        </div>
+    </div>
+</body>
+</html>
