@@ -1,84 +1,55 @@
-# Capsule
+# KMP-Capsule (fork of Kyant0/Capsule)
 
-Capsule is a Jetpack Compose library that creates **G2 continuous** rounded rectangles.
+KMP-Capsule is a Kotlin Multiplatform port of the excellent Capsule library by [Kyant0](https://github.com/Kyant0). 
 
-![Different types of rounded rectangles](docs/rounded_rectangles.png)
+This fork adapts the capsule shape to KMP (Android + iOS) with a simplified API focused on a portable `ContinuousCapsule` shape.
 
-Customizable curvature combs:
+> Huge thanks to Kyant0 for the original work on Capsule and the deep thought put into G1/G2 continuity and performant curve construction. This project would not exist without their contribution to the Compose ecosystem.
 
-![Different curvature combs](docs/curvature_combs.png)
+> Note: This fork currently exposes a portable `ContinuousCapsule` API for KMP. Advanced continuity profiles (`G2Continuity`, curvature combs, etc.) are part of the original Android-only implementation and are not included in the KMP surface yet.
 
-## [Playground app](./app/release/app-release.apk)
-
-<img alt="Screenshot of the playground app" height="400" src="docs/playground_app.jpg"/>
+Original Android playground and visuals: see the upstream repository.
 
 ## Installation
 
-[![JitPack Release](https://jitpack.io/v/Kyant0/Capsule.svg)](https://jitpack.io/#Kyant0/Capsule)
+This project is designed to be consumed as a local submodule/module while KMP packaging is stabilized.
 
 ```kotlin
-// settings.gradle.kts in root project
-dependencyResolutionManagement {
-    repositories {
-        maven("https://jitpack.io")
-    }
-}
+// settings.gradle.kts (root)
+include(":libs:KMP-Capsule")
+project(":libs:KMP-Capsule").projectDir = File(rootDir, "libs/KMP-capsule/capsule")
 
-// build.gradle.kts in module
-implementation("com.github.Kyant0:Capsule:<version>")
+// composeApp/build.gradle.kts (commonMain)
+commonMain.dependencies {
+    implementation(project(":libs:KMP-Capsule"))
+}
 ```
 
-## Usages
+## Usage (KMP)
 
-Replace the `RoundedCornerShape` with `ContinuousRoundedRectangle` or `ContinuousCapsule`:
+Replace rounded shapes with `ContinuousCapsule` from the KMP module:
 
 ```kotlin
-// create a basic rounded corner shape
-ContinuousRoundedRectangle(16.dp)
+import com.amp_digital.capsule.ContinuousCapsule
 
 // create a capsule shape
-ContinuousCapsule
-```
-
-Custom continuity:
-
-```kotlin
-val g1 = G1Continuity // no corner smoothness
-val g2 = G2Continuity(
-    profile = G2ContinuityProfile.RoundedRectangle.copy(
-        extendedFraction = 0.5,
-        arcFraction = 0.5,
-        bezierCurvatureScale = 1.1,
-        arcCurvatureScale = 1.1
-    ),
-    capsuleProfile = G2ContinuityProfile.Capsule.copy(
-        extendedFraction = 0.5,
-        arcFraction = 0.25
-    )
+Box(
+    modifier = Modifier
+        .clip(ContinuousCapsule)
+        .background(color)
 )
-
-// create shapes with custom continuity
-ContinuousRoundedRectangle(16.dp, continuity = g2)
-ContinuousCapsule(continuity = g2)
 ```
 
-The following parameters are supported by `G2ContinuityProfile`:
+Advanced continuity (G2 profiles) is available in the original Android-only library: please refer to the upstream docs if you need those features today.
 
-- **extended fraction:** the transition length between original corner and line, relative to the corner radius
-- **arc fraction:** the ratio of the arc to the corner
-- **Bezier curvature scale**: the multiplier of the end curvature of the Bezier curve
-- **arc curvature scale**: the multiplier of the arc curvature
+### API surface
 
-**Note:** It guarantees G1 continuity at least. Only if the Bezier curvature scale equals the arc curvature scale,
-it will have exact G2 continuity.
+- `ContinuousCapsule`: platform-agnostic capsule shape for Compose Multiplatform
+- Stable import path: `com.amp_digital.capsule.ContinuousCapsule`
 
-## Tips
+## Credits & License
 
-### Performance
+- Upstream project: [Kyant0/Capsule](https://github.com/Kyant0/Capsule) by [Kyant0](https://github.com/Kyant0)
+- This fork: KMP-Capsule (Android + iOS simplified API)
 
-Drawing cubic Bézier curves on Android performs poorly. However, the Capsule library uses a very efficient method to
-calculate the control points, achieving optimal theoretical performance.
-
-When the shape area is large (almost fullscreen) and the corner radius is constantly changing, performance may decrease.
-Use `animatedShape.copy(continuity = G1Continuity)` to temporarily disable corner smoothing during the
-animation.
+Licensed under Apache-2.0, same as the upstream project.
