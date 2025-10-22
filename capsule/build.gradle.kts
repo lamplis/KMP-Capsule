@@ -16,6 +16,7 @@ kotlin {
     
     listOf(
         iosArm64(),
+        //iosX64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
@@ -31,8 +32,7 @@ kotlin {
             implementation(compose.ui)
         }
         androidMain.dependencies {
-            // Delegate to original Kyant0 Capsule on Android to preserve behavior
-            implementation("com.github.Kyant0:Capsule:2.1.0")
+            // Use local KMP-Capsule implementation only; no external Kyant Capsule
         }
         iosMain.dependencies {
             // iOS-specific dependencies if needed
