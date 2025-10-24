@@ -16,7 +16,6 @@ kotlin {
     
     listOf(
         iosArm64(),
-        //iosX64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
