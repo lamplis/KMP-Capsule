@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     id("org.jetbrains.kotlin.multiplatform") version "2.3.10"
     alias(libs.plugins.androidMultiplatformLibrary)
-    id("org.jetbrains.compose") version "1.10.1"
+    id("org.jetbrains.compose") version "1.10.3"
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
 }
 
