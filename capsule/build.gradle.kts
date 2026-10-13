@@ -10,7 +10,7 @@ plugins {
 kotlin {
     androidLibrary {
         namespace = "com.amp_digital.capsule"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 21
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
